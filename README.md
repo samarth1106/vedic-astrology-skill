@@ -47,7 +47,7 @@ Configurable **ayanamsa** (Lahiri / Raman / KP / Yukteshwar / Fagan-Bradley),
 Copy the `vedic-astrology/` folder into your Claude Code skills directory:
 
 ```bash
-git clone https://github.com/<your-username>/vedic-astrology-skill.git
+git clone https://github.com/samarth1106/vedic-astrology-skill.git
 cp -r vedic-astrology-skill/vedic-astrology ~/.claude/skills/
 ```
 
