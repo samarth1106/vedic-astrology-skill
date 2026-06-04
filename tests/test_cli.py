@@ -103,6 +103,59 @@ def test_dasha_predict_rejects_pre_birth_date():
 
 
 # --------------------------------------------------------------------------- #
+# Vargas — D1 identity, D9==navamsa, strength bounds.
+# --------------------------------------------------------------------------- #
+def test_varga_charts_and_strength():
+    r = run(VEDIC, "varga.py", REF)
+    # REF chart: Sun in Cancer (D1=4), Moon's navamsa is Cancer (D9=4).
+    assert r["charts"]["1"]["Sun"] == 4
+    assert r["charts"]["9"]["Moon"] == 4
+    # Every point lands in a valid sign for every division.
+    for d_div, chart in r["charts"].items():
+        assert all(1 <= s <= 12 for s in chart.values())
+    # Strength scores are well-formed.
+    for p, s in r["strength"].items():
+        assert 0 <= s["varga_bala_pct"] <= 100
+        assert 0 <= s["own_or_exalted_count"] <= 16
+
+
+# --------------------------------------------------------------------------- #
+# Gochar — structure + natal reference + Sade Sati phase house.
+# --------------------------------------------------------------------------- #
+def test_gochar_transits_and_panoti():
+    r = run(VEDIC, "gochar.py", REF + ["--on", "2026-06-04"])
+    assert r["natal_moon_sign"] == "Taurus"      # REF Moon is in Taurus
+    assert len(r["transits"]) == 9
+    for t in r["transits"]:
+        assert 1 <= t["house_from_moon"] <= 12
+        assert 1 <= t["house_from_lagna"] <= 12
+    assert 1 <= r["saturn_panoti"]["phase_house"] <= 12
+
+
+# --------------------------------------------------------------------------- #
+# Bhava report — 12 houses, house 1 carries the Lagna sign.
+# --------------------------------------------------------------------------- #
+def test_houses_report():
+    r = run(VEDIC, "houses.py", REF)
+    assert len(r["bhavas"]) == 12
+    h1 = r["bhavas"][0]
+    assert h1["house"] == 1 and h1["sign"] == r["lagna_sign"]
+    # Every house has a lord that is a real planet.
+    planets = {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
+    assert all(b["lord"] in planets for b in r["bhavas"])
+
+
+def test_remedies_and_chart():
+    rem = run(VEDIC, "remedies.py", REF + ["--on", "2026-06-04"])
+    assert rem["mahadasha_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter",
+                                     "Venus", "Saturn", "Rahu", "Ketu"}
+    assert isinstance(rem["flagged"], list)
+    ch = run(VEDIC, "chart.py", REF + ["--varga", "D1"])
+    total = sum(len(v) for v in ch["by_sign"].values())
+    assert total == 9                            # all nine grahas placed once
+
+
+# --------------------------------------------------------------------------- #
 # Ashtakavarga — the hard invariants.
 # --------------------------------------------------------------------------- #
 def test_sarvashtakavarga_total_337():

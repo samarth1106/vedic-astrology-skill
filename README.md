@@ -30,6 +30,11 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
 | **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction): Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja yoga |
 | **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and **Shadbala** (partial — components honestly labelled) |
+| **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength |
+| **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
+| **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants, aspecting planets, and natural karaka |
+| **Remedies** (`remedies.py`) | Traditional **upaya** (deity, mantra, gemstone, charity) for the dasha lord + weak/afflicted planets — *cultural only, clearly disclaimed* |
+| **Chart diagram** (`chart.py`) | ASCII **North-Indian** (diamond) & **South-Indian** (grid) kundli for any varga |
 | **Matching** (`matching.py`) | **Guna Milan** (36-point Ashtakoot), **Manglik** (Mangal Dosha), **Kaal Sarpa Dosha** |
 | **Geocoder** (`geocode.py`) | Offline city → latitude / longitude / IANA timezone (bundled GeoNames dataset) |
 | **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), Lo Shu grid, compatibility, personal year, name-correction hints |
@@ -71,6 +76,11 @@ cd vedic-astrology/scripts
 python3 kundli.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 dasha.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
 python3 dasha_predict.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
+python3 varga.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts D9,D10
+python3 gochar.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
+python3 houses.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --house 10
+python3 remedies.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+python3 chart.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --style both --varga D1
 python3 panchang.py --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 yogas.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
@@ -88,6 +98,12 @@ Once installed, just ask naturally:
 > "What's my current Vimshottari dasha?"
 >
 > "I'm in Mercury–Venus dasha — how will it affect my career, money, and marriage?"
+>
+> "Am I going through Sade Sati right now? What are the transits doing?"
+>
+> "Show my D10 career chart and read my 10th house."
+>
+> "Draw my kundli in North Indian style."
 >
 > "Give me today's panchang for Mumbai."
 >
@@ -129,6 +145,11 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── core.py             # the ONLY place Swiss Ephemeris is configured
 │   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
+│   │   ├── varga.py            # 16 divisional charts + cross-varga strength
+│   │   ├── gochar.py           # transits + Sade Sati
+│   │   ├── houses.py           # bhava (house-by-house) report
+│   │   ├── remedies.py         # traditional upaya (cultural only)
+│   │   ├── chart.py            # North/South Indian ASCII chart
 │   │   ├── matching.py         # Guna Milan + doshas
 │   │   └── geocode.py          # offline city lookup
 │   └── references/             # nakshatras, yogas, interpretation
@@ -160,8 +181,15 @@ CI runs the suite on Python 3.10–3.12 on every push and PR.
 - Yoga detection is a **curated subset**, not exhaustive — see `references/yogas.md`.
 - Panchang elements change through the day; the tool reports values at the given
   clock time. Vara (weekday) uses the civil date (Vedic days run sunrise-to-sunrise).
-- Divisional charts beyond D1 (e.g. D9 Navamsa), ashtakavarga, and transit/gochar
-  analysis are **not** in v1.
+- Divisional charts (the 16 Shodasavarga), Ashtakavarga, transits/gochar, Sade
+  Sati, bhava analysis, remedies, and chart diagrams are now included. Still
+  **not** covered: a complete Shadbala, alternative dasha systems (Yogini/Jaimini),
+  KP sub-lords, and Varshaphal (annual chart).
+- The `varga.py` **VargaBala %** is the skill's own transparent dignity score,
+  **not** the classical Vimshopaka — see `references/vargas.md`. The exact
+  own/exalted/debilitated counts are the reliable figures.
+- `remedies.py` is **traditional/cultural only** — not advice, no demonstrated
+  effect; never buy gemstones on its basis.
 
 ---
 

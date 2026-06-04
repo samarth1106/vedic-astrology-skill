@@ -288,8 +288,113 @@ def navamsa_sign(lon: float) -> int:
     For D9 the neat identity holds: navamsa sign index = floor(L / (30/9)) mod 12.
     (Movable signs start their navamsa from themselves, fixed from the 9th, dual
     from the 5th — this formula reproduces exactly that classical scheme.)
+
+    Uses the multiply form int(L*9/30) rather than L // (30/9): the latter is
+    floating-point fragile at exact amsa boundaries (e.g. 10.0° floors to the
+    wrong amsa because 30/9 is not representable).
     """
-    return int(lon // NAVAMSA_SPAN) % 12 + 1
+    return int(lon * 9 / 30.0) % 12 + 1
+
+
+# --------------------------------------------------------------------------- #
+# Divisional charts (Vargas) — general Parashari amsa rules.
+# --------------------------------------------------------------------------- #
+# The 16 divisions of the Shodasavarga, in standard order, with the life area
+# each is classically read for.
+SHODASAVARGA = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]
+VARGA_PURPOSE = {
+    1: "Rashi — body, self, the whole life",
+    2: "Hora — wealth & resources",
+    3: "Drekkana — siblings, courage, longevity",
+    4: "Chaturthamsa — fortune, property, home",
+    7: "Saptamsha — children & progeny",
+    9: "Navamsa — spouse, marriage, dharma & inner strength",
+    10: "Dasamsha — career, status & karma",
+    12: "Dwadasamsa — parents & lineage",
+    16: "Shodasamsa — vehicles, comforts & happiness",
+    20: "Vimsamsa — spiritual practice & worship",
+    24: "Chaturvimsamsa — education & learning",
+    27: "Bhamsa / Nakshatramsa — strengths & weaknesses",
+    30: "Trimsamsa — misfortunes, troubles & health",
+    40: "Khavedamsa — auspicious & inauspicious results (maternal)",
+    45: "Akshavedamsa — general (paternal), character",
+    60: "Shashtiamsa — past-life karma, fine-tuning of all areas",
+}
+
+
+def _sign_add(sign0: int, offset: int) -> int:
+    """Count `offset` signs forward from a 0-indexed sign; return 0-indexed."""
+    return (sign0 + offset) % 12
+
+
+def varga_sign(lon: float, d: int) -> int:
+    """Return the divisional (Dn) sign number (1..12) for a sidereal longitude.
+
+    Implements the classical Parashari amsa schemes for the 16 Shodasavarga
+    divisions. `d` is the divisor (1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27,
+    30, 40, 45, 60). Raises ValueError for an unsupported divisor.
+    """
+    sign0 = int(lon // 30)          # 0..11 (Aries=0)
+    deg = lon % 30.0                # 0..30
+    odd = (sign0 % 2 == 0)          # odd *sign* (Aries, Gemini…) => even index
+    modality = sign0 % 3            # 0 movable, 1 fixed, 2 dual
+    element = sign0 % 4             # 0 fire, 1 earth, 2 air, 3 water
+    part = int(deg * d / 30.0) if d else 0     # 0-based amsa index (boundary-safe)
+
+    if d == 1:
+        s = sign0
+    elif d == 2:  # Hora — only Cancer (Moon) or Leo (Sun)
+        first_half = deg < 15
+        if odd:
+            s = 4 if first_half else 3          # Leo / Cancer
+        else:
+            s = 3 if first_half else 4          # Cancer / Leo
+    elif d == 3:  # Drekkana — same, 5th, 9th
+        s = _sign_add(sign0, [0, 4, 8][part])
+    elif d == 4:  # Chaturthamsa — same, 4th, 7th, 10th
+        s = _sign_add(sign0, [0, 3, 6, 9][part])
+    elif d == 7:  # Saptamsha — odd from same, even from 7th
+        s = _sign_add(sign0 if odd else sign0 + 6, part)
+    elif d == 9:  # Navamsa — movable/fixed/dual start same/9th/5th
+        s = _sign_add(sign0 + [0, 8, 4][modality], part)
+    elif d == 10:  # Dasamsha — odd from same, even from 9th
+        s = _sign_add(sign0 if odd else sign0 + 8, part)
+    elif d == 12:  # Dwadasamsa — always from the sign itself
+        s = _sign_add(sign0, part)
+    elif d == 16:  # Shodasamsa — movable Aries, fixed Leo, dual Sagittarius
+        s = _sign_add([0, 4, 8][modality], part)
+    elif d == 20:  # Vimsamsa — movable Aries, fixed Sagittarius, dual Leo
+        s = _sign_add([0, 8, 4][modality], part)
+    elif d == 24:  # Chaturvimsamsa — odd from Leo, even from Cancer
+        s = _sign_add(4 if odd else 3, part)
+    elif d == 27:  # Bhamsa — fire Aries, earth Cancer, air Libra, water Capricorn
+        s = _sign_add([0, 3, 6, 9][element], part)
+    elif d == 30:  # Trimsamsa — unequal planetary segments
+        s = _trimsamsa_sign(sign0, deg, odd)
+    elif d == 40:  # Khavedamsa — odd from Aries, even from Libra
+        s = _sign_add(0 if odd else 6, part)
+    elif d == 45:  # Akshavedamsa — movable Aries, fixed Leo, dual Sagittarius
+        s = _sign_add([0, 4, 8][modality], part)
+    elif d == 60:  # Shashtiamsa — half-degree amsas counted from the sign itself
+        s = _sign_add(sign0, int(deg * 2))
+    else:
+        raise ValueError(f"Unsupported varga divisor D{d}. Supported: {SHODASAVARGA}")
+    return s + 1
+
+
+# Trimsamsa (D30) segment tables: (degree_width, sign0). Odd vs even signs.
+_TRIMSAMSA_ODD = [(5, 0), (5, 10), (8, 8), (7, 2), (5, 6)]    # Mars,Sat,Jup,Mer,Ven
+_TRIMSAMSA_EVEN = [(5, 1), (7, 5), (8, 11), (5, 9), (5, 7)]   # Ven,Mer,Jup,Sat,Mars
+
+
+def _trimsamsa_sign(sign0: int, deg: float, odd: bool) -> int:
+    table = _TRIMSAMSA_ODD if odd else _TRIMSAMSA_EVEN
+    cum = 0.0
+    for width, target in table:
+        cum += width
+        if deg < cum:
+            return target
+    return table[-1][1]
 
 
 def ascendant(jd: float, lat: float, lon: float, house_system: str = DEFAULT_HOUSE_SYSTEM) -> dict:

@@ -1,6 +1,6 @@
 ---
 name: vedic-astrology
-description: Compute Vedic (Hindu/jyotish) astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, or asks to cast/read a Hindu astrology chart.
+description: Compute Vedic (Hindu/jyotish) astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, or asks to cast/read a Hindu astrology chart.
 license: AGPL-3.0
 ---
 
@@ -56,6 +56,11 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Daily almanac / panchang / tithi / Rahu Kaal / sunrise / muhurta | `panchang.py` |
 | Yogas / chart combinations / raj yoga | `yogas.py` |
 | Planetary strength / Ashtakavarga / Shadbala / bindus | `strength.py` |
+| Divisional charts / vargas / D9 navamsa / D10 dasamsha / career-children-wealth chart | `varga.py` |
+| Transits / gochar / Sade Sati / dhaiya / "what's Saturn doing now" / current sky | `gochar.py` |
+| House-by-house / bhava report / "read my 7th/10th house" / house lords | `houses.py` |
+| Remedies / upaya / gemstone / mantra / which planet to strengthen | `remedies.py` |
+| Draw / visualise the chart / North or South Indian kundli diagram | `chart.py` |
 | Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
 | Look up a city's coordinates + timezone | `geocode.py` |
 
@@ -93,6 +98,26 @@ python3 yogas.py --date 1990-08-15 --time 14:30:00 \
 python3 strength.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
+# Divisional charts (vargas): D9 marriage, D10 career, cross-varga strength
+python3 varga.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts D9,D10   # or --charts all
+
+# Transits + Sade Sati (gochar from natal Moon; --on defaults to today)
+python3 gochar.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
+
+# Bhava (house-by-house) report; --house N for one house
+python3 houses.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --house 10
+
+# Traditional remedies for the dasha lord + weak/afflicted planets
+python3 remedies.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+
+# Draw the chart (South + North Indian ASCII); --varga D9 for navamsa
+python3 chart.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --style both --varga D1
+
 # Marriage matching (Guna Milan, 36 gunas) + Manglik for both
 python3 matching.py --mode milan \
   --boy-date 1990-08-15 --boy-time 14:30:00 --boy-lat 28.61 --boy-lon 77.21 --boy-tz Asia/Kolkata \
@@ -123,14 +148,24 @@ python3 matching.py --mode dosha --date 1990-08-15 --time 14:30:00 \
    `references/interpretation.md`. For yoga definitions and caveats, load
    `references/yogas.md`. For nakshatra details, `references/nakshatras.md`.
    For how `dasha_predict.py` builds its life-area reading (the karaka → chart →
-   blend model), load `references/dasha-effects.md`. Load these on demand — do
-   not preload them.
+   blend model), load `references/dasha-effects.md`. For divisional charts (which
+   varga reads which life area, and the honest caveat on the strength numbers),
+   load `references/vargas.md`. For transits and Sade Sati, load
+   `references/gochar.md`. Load these on demand — do not preload them.
 4. **`dasha_predict.py` is the go-to when the user asks "what does my current
    dasha mean / how will this period affect me".** It already personalises the
    reading to the chart (house placement, lordship, dignity, combustion, and the
    Maha↔Antar relationship), so present its output as a *backdrop of
    probabilities, not a prediction.* Use `--on <date>` to read a past or future
    period.
+5. **Pair dasha with transits.** For timing questions ("is this a good year",
+   "what's happening now"), run `dasha_predict.py` (the backdrop) AND `gochar.py`
+   (the trigger), and read them together. `gochar.py` also answers Sade Sati.
+6. **Confirm life-area questions in the right varga.** Career → D10, marriage →
+   D9, children → D7, wealth → D2 via `varga.py`; don't judge them from D1 alone.
+7. **`remedies.py` output is TRADITIONAL/CULTURAL ONLY.** Always present it with
+   the disclaimer that it is not advice and has no demonstrated effect, and never
+   encourage spending money on gemstones or rituals.
 4. Be honest about scope: yoga detection is a **curated subset**, not exhaustive;
    panchang reports values at the given clock time (elements change through the day);
    the weekday uses the civil date (Vedic days run sunrise-to-sunrise).
