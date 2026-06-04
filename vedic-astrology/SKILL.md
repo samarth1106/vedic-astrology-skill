@@ -52,8 +52,16 @@ Run them with the working directory set to `scripts/` (they import `core`).
 |-------------|--------|
 | Birth chart / kundli / planets / houses / lagna / rashi | `kundli.py` |
 | Life periods / dasha / mahadasha / antardasha / timeline | `dasha.py` |
-| Daily almanac / panchang / tithi / today's nakshatra / muhurta basics | `panchang.py` |
-| Yogas / chart combinations / raj yoga / strengths | `yogas.py` |
+| Daily almanac / panchang / tithi / Rahu Kaal / sunrise / muhurta | `panchang.py` |
+| Yogas / chart combinations / raj yoga | `yogas.py` |
+| Planetary strength / Ashtakavarga / Shadbala / bindus | `strength.py` |
+| Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
+| Look up a city's coordinates + timezone | `geocode.py` |
+
+**Tip:** if the user gives a city instead of coordinates, run
+`python3 geocode.py "<city>"` first to resolve `--lat --lon --tz`, then feed those
+into the chart commands. For numerology (life path / moolank / lo shu), use the
+sibling **`numerology`** skill, not these scripts.
 
 ### Examples
 
@@ -72,15 +80,33 @@ python3 dasha.py --date 1990-08-15 --time 14:30:00 \
 python3 panchang.py --date 2026-06-04 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
-# Yogas
+# Yogas (aspect-aware)
 python3 yogas.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+
+# Planetary strength: Ashtakavarga (full) + partial Shadbala
+python3 strength.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+
+# Marriage matching (Guna Milan, 36 gunas) + Manglik for both
+python3 matching.py --mode milan \
+  --boy-date 1990-08-15 --boy-time 14:30:00 --boy-lat 28.61 --boy-lon 77.21 --boy-tz Asia/Kolkata \
+  --girl-date 1992-03-10 --girl-time 09:15:00 --girl-lat 19.07 --girl-lon 72.88 --girl-tz Asia/Kolkata
+
+# Dosha scan for one chart (Manglik + Kaal Sarpa)
+python3 matching.py --mode dosha --date 1990-08-15 --time 14:30:00 \
+  --lat 28.61 --lon 77.21 --tz Asia/Kolkata
 ```
 
-### Optional flags (all birth-chart scripts)
+### Optional flags
 
 - `--ayanamsa` — `lahiri` (default), `raman`, `kp`, `yukteshwar`, `fagan_bradley`
 - `--house-system` — `whole_sign` (default), `placidus`, `equal` (kundli/yogas)
+- `--node` — `mean` (default) or `true` lunar node for Rahu/Ketu
+- `--geocentric` — opt out of the default **topocentric** positions (birth charts
+  are topocentric by default — important for the Moon and therefore the dasha)
+- `--ephemeris` — `moshier` (default, offline) or `swiss` (needs `.se1` files)
+- `--levels` (dasha) — `1` Mahadasha, `2` +Antardasha (default), `3` +Pratyantardasha
 - `--json` — emit JSON for further processing instead of the formatted text table
 
 ## Presenting results

@@ -45,7 +45,13 @@ def _sequence_from(lord: str) -> list[str]:
 
 
 def compute_dasha(args) -> dict:
-    core.init_engine(args.ayanamsa)
+    core.init_engine(
+        args.ayanamsa,
+        node=getattr(args, "node", "mean"),
+        topocentric=not getattr(args, "geocentric", False),
+        lat=args.lat, lon=args.lon,
+        ephemeris=getattr(args, "ephemeris", "moshier"),
+    )
     y, m, d = (int(x) for x in args.date.split("-"))
     parts = args.time.split(":")
     hh = int(parts[0]); mm = int(parts[1]) if len(parts) > 1 else 0
@@ -79,7 +85,7 @@ def compute_dasha(args) -> dict:
             "years": round(span_years, 3),
         }
         if args.levels >= 2:
-            entry["antardashas"] = _antardashas(lord, cursor, span_years)
+            entry["antardashas"] = _antardashas(lord, cursor, span_years, args.levels)
         periods.append(entry)
         cursor = end
 
@@ -96,22 +102,27 @@ def compute_dasha(args) -> dict:
     }
 
 
-def _antardashas(maha_lord: str, start_dt: datetime, maha_years: float) -> list[dict]:
-    """Sub-divide a Mahadasha into 9 Antardashas, proportional to dasha years.
+def _antardashas(maha_lord: str, start_dt: datetime, maha_years: float,
+                 levels: int = 2) -> list[dict]:
+    """Sub-divide a period into 9 sub-periods, proportional to dasha years.
 
-    Antardasha length = maha_years * (sub_lord_years / 120).
+    Used recursively: Antardasha = Mahadasha/9, Pratyantardasha = Antardasha/9.
+    Sub-period length = parent_years * (sub_lord_years / 120).
     """
     subs = []
     cursor = start_dt
     for sub_lord in _sequence_from(maha_lord):
         sub_years = maha_years * (core.DASHA_YEARS[sub_lord] / 120.0)
         end = cursor + timedelta(days=sub_years * DAYS_PER_YEAR)
-        subs.append({
+        node = {
             "lord": sub_lord,
             "start": cursor.strftime("%Y-%m-%d"),
             "end": end.strftime("%Y-%m-%d"),
             "years": round(sub_years, 3),
-        })
+        }
+        if levels >= 3:
+            node["pratyantardashas"] = _antardashas(sub_lord, cursor, sub_years, levels - 1)
+        subs.append(node)
         cursor = end
     return subs
 
@@ -142,8 +153,12 @@ def main():
     ap.add_argument("--lon", type=float, required=True)
     ap.add_argument("--tz", required=True, help="IANA timezone, e.g. Asia/Kolkata")
     ap.add_argument("--ayanamsa", default=core.DEFAULT_AYANAMSA)
-    ap.add_argument("--levels", type=int, default=2, choices=[1, 2],
-                    help="1=Mahadasha only, 2=+Antardasha (default)")
+    ap.add_argument("--levels", type=int, default=2, choices=[1, 2, 3],
+                    help="1=Mahadasha, 2=+Antardasha (default), 3=+Pratyantardasha")
+    ap.add_argument("--node", default="mean", choices=["mean", "true"])
+    ap.add_argument("--geocentric", action="store_true",
+                    help="Use geocentric positions (default is topocentric)")
+    ap.add_argument("--ephemeris", default="moshier", choices=["moshier", "swiss"])
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 

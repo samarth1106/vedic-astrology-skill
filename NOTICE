@@ -36,6 +36,19 @@ installed by the user via `pip install -r requirements.txt`.
    Copyright (c) Stuart Bishop. MIT License.
    https://pypi.org/project/pytz/
 
+3. GeoNames geographical database
+   ----------------------------------------------------------------------------
+   Copyright (c) GeoNames.
+   Licensed under the Creative Commons Attribution 4.0 License (CC-BY 4.0).
+   https://www.geonames.org/
+   https://creativecommons.org/licenses/by/4.0/
+
+   The offline geocoder (scripts/geocode.py) ships a compact derivative of the
+   GeoNames "cities15000" dataset, bundled as data/cities.csv. It retains city
+   name, ASCII name, country code, latitude, longitude, IANA timezone, and
+   population. This is a redistributed derivative work under CC-BY 4.0;
+   attribution to GeoNames is required and provided here.
+
 ================================================================================
 DISCLAIMER
 ================================================================================

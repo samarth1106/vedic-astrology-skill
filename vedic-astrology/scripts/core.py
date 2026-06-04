@@ -1,17 +1,28 @@
 """
-core.py — Shared Swiss Ephemeris engine for the vedic-astrology skill.
+core.py — Shared Swiss Ephemeris engine for the vedic-astrology skill (v2).
 
 This module owns ALL interaction with Swiss Ephemeris (via pyswisseph) and the
-shared Vedic constants. Every command script (kundli, dasha, panchang, yogas)
-imports from here so that sidereal mode, ayanamsa, and ephemeris flags are
+shared Vedic constants. Every command script imports from here so that sidereal
+mode, ayanamsa, node model, topocentric setting, and ephemeris flags are
 configured in exactly one place.
 
+v2 additions over v1:
+- Topocentric positions (observer on Earth's surface) — important for the Moon,
+  whose geocentric vs topocentric longitude can differ by up to ~1°, which can
+  flip the Janma Nakshatra (and therefore the Vimshottari starting dasha) for a
+  birth near a nakshatra boundary.
+- True-node vs mean-node toggle for Rahu/Ketu.
+- Vedic special aspects (graha drishti) and sign aspects.
+- Combustion (astangata) detection.
+- Navamsa (D9) sign helper + vargottama detection.
+- Natural planetary friendships (Naisargika maitri) for strength/compatibility.
+- Sunrise/sunset (swe.rise_trans) for a sunrise-accurate Vara (weekday).
+
 Design notes:
-- We use the Moshier ephemeris (swe.FLG_MOSEPH), which is analytical and built
-  into the Swiss Ephemeris C library. This means NO external .se1 data files are
-  required — the skill runs fully offline after `pip install pyswisseph`.
-  Accuracy is ~arc-second for modern dates, far beyond what jyotish needs.
-- Sidereal (Vedic) mode is enforced globally. Default ayanamsa is Lahiri.
+- Default ephemeris is Moshier (swe.FLG_MOSEPH) — analytical, no .se1 data files,
+  fully offline. Pass ephemeris="swiss" to init_engine() to use Swiss files if
+  the user has installed them.
+- Sidereal (Vedic) mode is enforced. Default ayanamsa is Lahiri.
 - All longitudes returned are sidereal, in degrees [0, 360).
 
 Licensing: depends on pyswisseph / Swiss Ephemeris (AGPL-3.0 or commercial).
@@ -20,8 +31,8 @@ See the repository LICENSE and NOTICE files.
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Dict, List, Tuple
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
 
 import pytz
 import swisseph as swe
@@ -47,8 +58,16 @@ HOUSE_SYSTEMS = {
 }
 DEFAULT_HOUSE_SYSTEM = "whole_sign"
 
-# Base ephemeris flags: sidereal + speed (for retrograde) + Moshier (offline).
-_BASE_FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED | swe.FLG_MOSEPH
+# --------------------------------------------------------------------------- #
+# Engine state — set by init_engine(). Holds the computed ephemeris flag bitmask
+# and the node model so all calc helpers share one configuration.
+# --------------------------------------------------------------------------- #
+_STATE: dict = {
+    "flags": swe.FLG_SIDEREAL | swe.FLG_SPEED | swe.FLG_MOSEPH,
+    "node": "mean",          # "mean" -> MEAN_NODE, "true" -> TRUE_NODE
+    "ayanamsa": DEFAULT_AYANAMSA,
+    "topocentric": False,
+}
 
 # --------------------------------------------------------------------------- #
 # Vedic reference data
@@ -63,6 +82,12 @@ SIGN_LORD = {
     1: "Mars", 2: "Venus", 3: "Mercury", 4: "Moon", 5: "Sun", 6: "Mercury",
     7: "Venus", 8: "Mars", 9: "Jupiter", 10: "Saturn", 11: "Saturn", 12: "Jupiter",
 }
+
+# Sign element/modality (1-indexed). Used for navamsa start and dosha logic.
+# modality: 0=movable(chara), 1=fixed(sthira), 2=dual(dwiswabhava)
+SIGN_MODALITY = {s: (s - 1) % 3 for s in range(1, 13)}
+# element: 0=fire,1=earth,2=air,3=water (Aries=fire, Taurus=earth, ...)
+SIGN_ELEMENT = {s: (s - 1) % 4 for s in range(1, 13)}
 
 # 27 Nakshatras in order. Each spans 13°20' = 13.3333°.
 NAKSHATRAS = [
@@ -80,7 +105,7 @@ DASHA_YEARS = {
     "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17,
 }  # total = 120
 
-# Planet name -> Swiss Ephemeris body id. Ketu is derived (Rahu + 180).
+# Planet name -> Swiss Ephemeris body id. Node body chosen dynamically (mean/true).
 PLANETS = {
     "Sun": swe.SUN,
     "Moon": swe.MOON,
@@ -89,11 +114,13 @@ PLANETS = {
     "Jupiter": swe.JUPITER,
     "Venus": swe.VENUS,
     "Saturn": swe.SATURN,
-    "Rahu": swe.MEAN_NODE,   # Mean lunar node (north). Ketu = Rahu + 180.
+    "Rahu": swe.MEAN_NODE,   # overridden to TRUE_NODE if node model = "true"
 }
+PLANET_ORDER = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
 
 NAKSHATRA_SPAN = 360.0 / 27.0       # 13.3333...
 PADA_SPAN = NAKSHATRA_SPAN / 4.0    # 3.3333...
+NAVAMSA_SPAN = 30.0 / 9.0           # 3.3333...
 
 # Exaltation / own-sign tables for dignity & Mahapurusha yogas (sign numbers 1..12).
 EXALTATION = {
@@ -105,14 +132,60 @@ OWN_SIGNS = {
     "Jupiter": [9, 12], "Venus": [2, 7], "Saturn": [10, 11],
 }
 
+# Vedic special aspects (graha drishti): house-distances a planet aspects,
+# counted inclusively from its own house (7 = the opposite house).
+VEDIC_ASPECTS = {
+    "Sun": [7], "Moon": [7], "Mercury": [7], "Venus": [7],
+    "Mars": [4, 7, 8],
+    "Jupiter": [5, 7, 9],
+    "Saturn": [3, 7, 10],
+    "Rahu": [7], "Ketu": [7],   # nodal aspects vary by tradition; 7th used by default
+}
+
+# Natural planetary friendships (Naisargika maitri). f=friend, n=neutral, e=enemy.
+NATURAL_RELATION = {
+    "Sun":     {"Moon": "f", "Mars": "f", "Jupiter": "f", "Mercury": "n", "Venus": "e", "Saturn": "e"},
+    "Moon":    {"Sun": "f", "Mercury": "f", "Mars": "n", "Jupiter": "n", "Venus": "n", "Saturn": "n"},
+    "Mars":    {"Sun": "f", "Moon": "f", "Jupiter": "f", "Venus": "n", "Saturn": "n", "Mercury": "e"},
+    "Mercury": {"Sun": "f", "Venus": "f", "Moon": "e", "Mars": "n", "Jupiter": "n", "Saturn": "n"},
+    "Jupiter": {"Sun": "f", "Moon": "f", "Mars": "f", "Saturn": "n", "Mercury": "e", "Venus": "e"},
+    "Venus":   {"Mercury": "f", "Saturn": "f", "Mars": "n", "Jupiter": "n", "Sun": "e", "Moon": "e"},
+    "Saturn":  {"Mercury": "f", "Venus": "f", "Jupiter": "n", "Sun": "e", "Moon": "e", "Mars": "e"},
+}
+
+# Combustion (astangata) orbs in degrees from the Sun. Tuple = (direct, retro).
+COMBUSTION_ORB = {
+    "Moon": (12.0, 12.0), "Mars": (17.0, 17.0), "Mercury": (14.0, 12.0),
+    "Jupiter": (11.0, 11.0), "Venus": (10.0, 8.0), "Saturn": (15.0, 15.0),
+}
+
+WEEKDAY_LORD = {
+    "Sunday": "Sun", "Monday": "Moon", "Tuesday": "Mars", "Wednesday": "Mercury",
+    "Thursday": "Jupiter", "Friday": "Venus", "Saturday": "Saturn",
+}
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
 
 # --------------------------------------------------------------------------- #
 # Engine init & time conversion
 # --------------------------------------------------------------------------- #
-def init_engine(ayanamsa: str = DEFAULT_AYANAMSA) -> None:
+def init_engine(
+    ayanamsa: str = DEFAULT_AYANAMSA,
+    node: str = "mean",
+    topocentric: bool = False,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
+    altitude: float = 0.0,
+    ephemeris: str = "moshier",
+) -> None:
     """Configure Swiss Ephemeris for sidereal (Vedic) calculation.
 
-    Must be called once before any calc. Idempotent.
+    Must be called before any calc. Idempotent for given arguments.
+
+    node: "mean" (default) or "true" lunar node for Rahu/Ketu.
+    topocentric: if True, positions are computed for an observer at (lat, lon,
+        altitude). Recommended for birth charts (Moon parallax). Requires lat/lon.
+    ephemeris: "moshier" (default, offline) or "swiss" (needs .se1 files).
     """
     key = ayanamsa.strip().lower()
     if key not in AYANAMSA:
@@ -120,6 +193,24 @@ def init_engine(ayanamsa: str = DEFAULT_AYANAMSA) -> None:
             f"Unknown ayanamsa '{ayanamsa}'. Choose from: {', '.join(sorted(AYANAMSA))}"
         )
     swe.set_sid_mode(AYANAMSA[key], 0, 0)
+
+    flags = swe.FLG_SIDEREAL | swe.FLG_SPEED
+    flags |= swe.FLG_SWIEPH if ephemeris == "swiss" else swe.FLG_MOSEPH
+
+    if topocentric:
+        if lat is None or lon is None:
+            raise ValueError("topocentric=True requires lat and lon")
+        swe.set_topo(lon, lat, altitude)
+        flags |= swe.FLG_TOPOCTR
+
+    PLANETS["Rahu"] = swe.TRUE_NODE if node == "true" else swe.MEAN_NODE
+
+    _STATE.update({"flags": flags, "node": node, "ayanamsa": key, "topocentric": topocentric})
+
+
+def ayanamsa_value(jd: float) -> float:
+    """Return the ayanamsa (degrees) in effect at a given Julian Day."""
+    return swe.get_ayanamsa_ut(jd)
 
 
 def to_julian_ut(
@@ -139,40 +230,41 @@ def to_julian_ut(
     return swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, ut_hour, swe.GREG_CAL)
 
 
+def jd_to_local(jd: float, tz_name: str) -> datetime:
+    """Convert a Julian Day (UT) back to a timezone-aware local datetime."""
+    y, m, d, ut_hour = swe.revjul(jd, swe.GREG_CAL)
+    base = datetime(int(y), int(m), int(d)) + timedelta(hours=ut_hour)
+    return pytz.utc.localize(base).astimezone(pytz.timezone(tz_name))
+
+
 # --------------------------------------------------------------------------- #
 # Position helpers
 # --------------------------------------------------------------------------- #
 def sidereal_longitude(jd: float, body: int) -> Tuple[float, float]:
     """Return (longitude_deg, speed_deg_per_day) for a body, sidereal frame.
 
-    Negative speed => retrograde.
+    Negative speed => retrograde. Uses the flags configured by init_engine().
     """
-    pos, _ = swe.calc_ut(jd, body, _BASE_FLAGS)
+    pos, _ = swe.calc_ut(jd, body, _STATE["flags"])
     return pos[0] % 360.0, pos[3]
 
 
 def all_planet_positions(jd: float) -> Dict[str, dict]:
-    """Compute sidereal positions for all 9 grahas including Rahu/Ketu.
-
-    Returns a dict keyed by planet name with longitude, sign, degree-in-sign,
-    nakshatra, pada, and retrograde flag.
-    """
+    """Compute sidereal positions for all 9 grahas including Rahu/Ketu."""
     out: Dict[str, dict] = {}
     for name, body in PLANETS.items():
         lon, speed = sidereal_longitude(jd, body)
         retro = speed < 0
-        # Nodes are always retrograde in mean-node model; flag explicitly.
         if name == "Rahu":
-            retro = True
+            retro = True  # nodes are retrograde by nature
         out[name] = _describe_point(lon, retrograde=retro)
-    # Ketu is exactly opposite Rahu.
     ketu_lon = (out["Rahu"]["longitude"] + 180.0) % 360.0
     out["Ketu"] = _describe_point(ketu_lon, retrograde=True)
     return out
 
 
 def _describe_point(lon: float, retrograde: bool = False) -> dict:
-    """Decompose a sidereal longitude into sign/nakshatra/pada components."""
+    """Decompose a sidereal longitude into sign/nakshatra/pada/navamsa."""
     sign_num = int(lon // 30) + 1            # 1..12
     deg_in_sign = lon % 30.0
     nak_index = int(lon // NAKSHATRA_SPAN)   # 0..26
@@ -185,8 +277,19 @@ def _describe_point(lon: float, retrograde: bool = False) -> dict:
         "nakshatra": NAKSHATRAS[nak_index],
         "nakshatra_lord": DASHA_SEQUENCE[nak_index % 9],
         "pada": pada,
+        "navamsa_sign_num": navamsa_sign(lon),
         "retrograde": retrograde,
     }
+
+
+def navamsa_sign(lon: float) -> int:
+    """Return the D9 (Navamsa) sign number (1..12) for a sidereal longitude.
+
+    For D9 the neat identity holds: navamsa sign index = floor(L / (30/9)) mod 12.
+    (Movable signs start their navamsa from themselves, fixed from the 9th, dual
+    from the 5th — this formula reproduces exactly that classical scheme.)
+    """
+    return int(lon // NAVAMSA_SPAN) % 12 + 1
 
 
 def ascendant(jd: float, lat: float, lon: float, house_system: str = DEFAULT_HOUSE_SYSTEM) -> dict:
@@ -201,12 +304,118 @@ def ascendant(jd: float, lat: float, lon: float, house_system: str = DEFAULT_HOU
 
 
 def house_of(planet_sign_num: int, asc_sign_num: int) -> int:
-    """Whole-sign house number (1..12) of a planet given the ascendant sign.
-
-    In whole-sign houses, the ascendant's sign is house 1 and each subsequent
-    sign is the next house.
-    """
+    """Whole-sign house number (1..12) of a planet given the ascendant sign."""
     return ((planet_sign_num - asc_sign_num) % 12) + 1
+
+
+# --------------------------------------------------------------------------- #
+# Aspects, combustion, dignity, friendship
+# --------------------------------------------------------------------------- #
+def aspected_houses(from_house: int, planet: str) -> List[int]:
+    """Houses (1..12) aspected by `planet` sitting in `from_house` (sign aspect)."""
+    return sorted({((from_house - 1 + (d - 1)) % 12) + 1 for d in VEDIC_ASPECTS[planet]})
+
+
+def aspects_planet(a: str, b: str, planets: Dict[str, dict]) -> bool:
+    """True if planet `a` casts a Vedic aspect onto planet `b`'s house."""
+    return planets[b]["house"] in aspected_houses(planets[a]["house"], a)
+
+
+def is_combust(planet: str, planet_lon: float, sun_lon: float, retrograde: bool) -> bool:
+    """Combustion (astangata): too close to the Sun within the planet's orb."""
+    if planet not in COMBUSTION_ORB:
+        return False
+    sep = abs((planet_lon - sun_lon + 180) % 360 - 180)  # angular separation 0..180
+    direct_orb, retro_orb = COMBUSTION_ORB[planet]
+    return sep <= (retro_orb if retrograde else direct_orb)
+
+
+def dignity(planet: str, sign_num: int) -> str:
+    """Classify a planet's dignity in a sign."""
+    if planet in ("Rahu", "Ketu"):
+        return "node"
+    if EXALTATION.get(planet) == sign_num:
+        return "exalted"
+    if planet in EXALTATION and ((EXALTATION[planet] + 5) % 12) + 1 == sign_num:
+        return "debilitated"
+    if sign_num in OWN_SIGNS.get(planet, []):
+        return "own sign"
+    return "neutral"
+
+
+def natural_relation(a: str, b: str) -> str:
+    """Naisargika (natural) relationship of planet a TOWARD b: friend/neutral/enemy."""
+    if a == b:
+        return "self"
+    code = NATURAL_RELATION.get(a, {}).get(b, "n")
+    return {"f": "friend", "n": "neutral", "e": "enemy"}[code]
+
+
+def is_vargottama(lon: float) -> bool:
+    """True if the D1 sign equals the D9 (navamsa) sign — a strong placement."""
+    return (int(lon // 30) + 1) == navamsa_sign(lon)
+
+
+# --------------------------------------------------------------------------- #
+# Rise/set for sunrise-accurate Vara
+# --------------------------------------------------------------------------- #
+_RISE = swe.CALC_RISE | swe.BIT_DISC_CENTER
+_SET = swe.CALC_SET | swe.BIT_DISC_CENTER
+
+
+def _rise_trans(jd: float, lat: float, lon: float, rsmi: int) -> Optional[float]:
+    """Wrapper around swe.rise_trans using the geopos-keyword signature.
+
+    Returns the event Julian Day (UT) or None if no event (e.g. polar day/night).
+    """
+    try:
+        ret, tret = swe.rise_trans(jd, swe.SUN, rsmi=rsmi, geopos=(lon, lat, 0.0))
+        if ret < 0:
+            return None
+        return tret[0]
+    except Exception:
+        return None
+
+
+def next_rise_set(jd_start: float, lat: float, lon: float) -> Tuple[Optional[float], Optional[float]]:
+    """Return (sunrise_jd, sunset_jd) — the first sunrise at/after jd_start and
+    the sunset following that sunrise. Either may be None at polar latitudes.
+    """
+    rise = _rise_trans(jd_start, lat, lon, _RISE)
+    if rise is None:
+        return None, None
+    sett = _rise_trans(rise, lat, lon, _SET)
+    return rise, sett
+
+
+def sunrise_before(jd: float, lat: float, lon: float) -> Optional[float]:
+    """Julian Day (UT) of the most recent sunrise at/before `jd`, or None.
+
+    Used to determine the Vedic Vara (weekday), which runs sunrise-to-sunrise.
+    """
+    # The sunrise that opens the Vedic day containing `jd` is the latest rise <= jd.
+    rise = _rise_trans(jd - 1.0, lat, lon, _RISE)
+    if rise is None:
+        return None
+    last = None
+    guard = 0
+    while rise is not None and rise <= jd and guard < 4:
+        last = rise
+        rise = _rise_trans(rise + 0.5, lat, lon, _RISE)
+        guard += 1
+    return last
+
+
+def vedic_vara(jd: float, lat: float, lon: float, tz_name: str) -> str:
+    """Weekday by the Vedic convention (sunrise-to-sunrise).
+
+    Falls back to the civil local weekday if sunrise can't be computed
+    (e.g. polar latitudes).
+    """
+    sr = sunrise_before(jd, lat, lon)
+    ref = sr if sr is not None else jd
+    local = jd_to_local(ref, tz_name)
+    return WEEKDAYS[local.weekday()]
 
 
 def deg_to_dms(deg: float) -> str:

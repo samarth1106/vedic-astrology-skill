@@ -23,7 +23,13 @@ import core
 
 
 def compute_kundli(args) -> dict:
-    core.init_engine(args.ayanamsa)
+    core.init_engine(
+        args.ayanamsa,
+        node=getattr(args, "node", "mean"),
+        topocentric=not getattr(args, "geocentric", False),
+        lat=args.lat, lon=args.lon,
+        ephemeris=getattr(args, "ephemeris", "moshier"),
+    )
     y, m, d = (int(x) for x in args.date.split("-"))
     hh, mm, ss = _parse_time(args.time)
     jd = core.to_julian_ut(y, m, d, hh, mm, ss, args.tz)
@@ -32,34 +38,30 @@ def compute_kundli(args) -> dict:
     asc_sign_num = asc["sign_num"]
 
     planets = core.all_planet_positions(jd)
+    sun_lon = planets["Sun"]["longitude"]
     for name, info in planets.items():
         info["house"] = core.house_of(info["sign_num"], asc_sign_num)
-        info["dignity"] = _dignity(name, info["sign_num"])
+        info["dignity"] = core.dignity(name, info["sign_num"])
+        info["vargottama"] = core.is_vargottama(info["longitude"])
+        info["navamsa_sign"] = core.SIGNS[info["navamsa_sign_num"] - 1]
+        info["combust"] = (
+            False if name in ("Sun", "Rahu", "Ketu")
+            else core.is_combust(name, info["longitude"], sun_lon, info["retrograde"])
+        )
 
     return {
         "input": {
             "date": args.date, "time": args.time, "lat": args.lat,
             "lon": args.lon, "timezone": args.tz,
             "ayanamsa": args.ayanamsa, "house_system": args.house_system,
+            "node": getattr(args, "node", "mean"),
+            "topocentric": not getattr(args, "geocentric", False),
         },
         "julian_day_ut": round(jd, 6),
+        "ayanamsa_deg": round(core.ayanamsa_value(jd), 6),
         "ascendant": asc,
         "planets": planets,
     }
-
-
-def _dignity(planet: str, sign_num: int) -> str:
-    """Classify a planet's dignity in its sign (used in interpretation)."""
-    if planet in ("Rahu", "Ketu"):
-        return "node"
-    if core.EXALTATION.get(planet) == sign_num:
-        return "exalted"
-    # Debilitation sign is opposite the exaltation sign.
-    if planet in core.EXALTATION and ((core.EXALTATION[planet] + 5) % 12) + 1 == sign_num:
-        return "debilitated"
-    if sign_num in core.OWN_SIGNS.get(planet, []):
-        return "own sign"
-    return "neutral"
 
 
 def _parse_time(t: str):
@@ -78,22 +80,31 @@ def render_text(result: dict) -> str:
     i = result["input"]
     lines.append(f"  Born: {i['date']} {i['time']} ({i['timezone']})")
     lines.append(f"  Place: lat {i['lat']}, lon {i['lon']}")
-    lines.append(f"  Ayanamsa: {i['ayanamsa'].title()} | Houses: {i['house_system']}")
+    frame = "topocentric" if i.get("topocentric") else "geocentric"
+    lines.append(f"  Ayanamsa: {i['ayanamsa'].title()} ({result.get('ayanamsa_deg')}°) "
+                 f"| Houses: {i['house_system']} | {frame} | {i.get('node','mean')}-node")
     lines.append("-" * 60)
     lines.append(f"  Lagna (Ascendant): {asc['sign']} "
                  f"{core.deg_to_dms(asc['degree_in_sign'])} "
                  f"| {asc['nakshatra']} pada {asc['pada']}")
     lines.append("-" * 60)
-    header = f"  {'Planet':<9}{'Sign':<12}{'Deg':<10}{'House':<6}{'Nakshatra':<16}{'Pada':<5}{'Dignity'}"
+    header = (f"  {'Planet':<9}{'Sign':<12}{'Deg':<10}{'Ho':<4}"
+              f"{'Nakshatra':<16}{'Pd':<4}{'D9':<12}{'Dignity':<12}{'Flags'}")
     lines.append(header)
-    lines.append("  " + "-" * 56)
+    lines.append("  " + "-" * 72)
     order = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
     for name in order:
         p = result["planets"][name]
         tag = name + ("(R)" if p["retrograde"] and name not in ("Rahu", "Ketu") else "")
+        flags = []
+        if p.get("combust"):
+            flags.append("combust")
+        if p.get("vargottama"):
+            flags.append("vargottama")
         lines.append(
             f"  {tag:<9}{p['sign']:<12}{core.deg_to_dms(p['degree_in_sign']):<10}"
-            f"{p['house']:<6}{p['nakshatra']:<16}{p['pada']:<5}{p['dignity']}"
+            f"{p['house']:<4}{p['nakshatra']:<16}{p['pada']:<4}"
+            f"{p.get('navamsa_sign',''):<12}{p['dignity']:<12}{', '.join(flags)}"
         )
     lines.append("=" * 60)
     return "\n".join(lines)
@@ -108,6 +119,12 @@ def main():
     ap.add_argument("--tz", required=True, help="IANA timezone, e.g. Asia/Kolkata")
     ap.add_argument("--ayanamsa", default=core.DEFAULT_AYANAMSA)
     ap.add_argument("--house-system", default=core.DEFAULT_HOUSE_SYSTEM, dest="house_system")
+    ap.add_argument("--node", default="mean", choices=["mean", "true"],
+                    help="Lunar node model for Rahu/Ketu (default mean)")
+    ap.add_argument("--geocentric", action="store_true",
+                    help="Use geocentric positions (default is topocentric)")
+    ap.add_argument("--ephemeris", default="moshier", choices=["moshier", "swiss"],
+                    help="moshier=offline (default), swiss=requires .se1 files")
     ap.add_argument("--json", action="store_true", help="Emit JSON instead of text")
     args = ap.parse_args()
 

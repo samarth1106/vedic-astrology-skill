@@ -1,9 +1,15 @@
-# 🪔 Vedic Astrology — a Claude Code Skill (Jyotish)
+# 🪔 Vedic Astrology & Numerology — Claude Code Skills (Jyotish + Ank Jyotish)
 
-An offline **Vedic / Hindu astrology** computation skill for
-[Claude Code](https://claude.com/claude-code). It casts a birth chart, computes
-dasha periods, generates the daily panchang, and detects classical yogas —
-entirely on your machine, **with no API keys and no network calls**.
+Offline **Vedic / Hindu astrology** and **numerology** skills for
+[Claude Code](https://claude.com/claude-code). Cast a birth chart, compute dasha
+periods, generate the daily panchang (with Rahu Kaal & sunrise), detect classical
+yogas, score planetary strength (Ashtakavarga + Shadbala), match horoscopes
+(36-point Guna Milan), scan for doshas (Manglik, Kaal Sarpa), and run a full
+numerology profile — entirely on your machine, **with no API keys and no network
+calls**.
+
+This repo ships **two sibling skills**: `vedic-astrology/` (ephemeris-based) and
+`numerology/` (pure arithmetic), plus a bundled offline **city geocoder**.
 
 All planetary math is done with the [Swiss Ephemeris](https://www.astro.com/swisseph/)
 in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
@@ -18,13 +24,18 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 
 | Command | What it computes |
 |---------|------------------|
-| **Kundli** (`kundli.py`) | D1 Rashi birth chart — planetary sidereal positions, signs, whole-sign houses, the Lagna (ascendant), nakshatra + pada per planet, dignities, and retrograde flags |
-| **Vimshottari Dasha** (`dasha.py`) | The 120-year Mahadasha / Antardasha timeline, computed from the Moon's nakshatra at birth |
-| **Panchang** (`panchang.py`) | The five limbs for any date + place — Tithi, Nakshatra, Yoga, Karana, Vara |
-| **Yogas** (`yogas.py`) | Detects common classical yogas (Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, and a simplified Raja yoga) with plain-language notes |
+| **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
+| **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
+| **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
+| **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction): Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja yoga |
+| **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and **Shadbala** (partial — components honestly labelled) |
+| **Matching** (`matching.py`) | **Guna Milan** (36-point Ashtakoot), **Manglik** (Mangal Dosha), **Kaal Sarpa Dosha** |
+| **Geocoder** (`geocode.py`) | Offline city → latitude / longitude / IANA timezone (bundled GeoNames dataset) |
+| **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), Lo Shu grid, compatibility, personal year, name-correction hints |
 
-Configurable **ayanamsa** (Lahiri / Raman / KP / Yukteshwar / Fagan-Bradley) and
-**house system** (Whole Sign / Placidus / Equal).
+Configurable **ayanamsa** (Lahiri / Raman / KP / Yukteshwar / Fagan-Bradley),
+**house system** (Whole Sign / Placidus / Equal), **node** (mean / true), and
+**topocentric** positions by default (geocentric optional).
 
 ---
 
@@ -101,20 +112,37 @@ noon default only for sign-level information, and treat the Lagna/houses as inva
 ## 🧮 How it works
 
 ```
-vedic-astrology/
-├── SKILL.md              # Claude's directive + routing layer
-├── requirements.txt
-├── scripts/
-│   ├── core.py           # the ONLY place Swiss Ephemeris is configured
-│   ├── kundli.py         # birth chart
-│   ├── dasha.py          # vimshottari dasha
-│   ├── panchang.py       # daily almanac
-│   └── yogas.py          # yoga detection + interpretation
-└── references/
-    ├── nakshatras.md     # 27 nakshatras, lords, padas
-    ├── yogas.md          # yoga rules + caveats
-    └── interpretation.md # planets, houses, signs (cultural meanings)
+vedic-astrology-skill/         # git repo (push this)
+├── README.md  LICENSE  NOTICE  .gitignore
+├── examples/sample-output.md
+├── tests/test_cli.py           # golden-value regression suite
+├── .github/workflows/ci.yml    # CI: pytest on py3.10–3.12
+├── vedic-astrology/            # SKILL 1 — copy into ~/.claude/skills/
+│   ├── SKILL.md
+│   ├── requirements.txt        # pyswisseph, pytz
+│   ├── data/cities.csv         # bundled GeoNames geocoder dataset
+│   ├── scripts/
+│   │   ├── core.py             # the ONLY place Swiss Ephemeris is configured
+│   │   ├── kundli.py  dasha.py  panchang.py  yogas.py
+│   │   ├── strength.py         # Ashtakavarga + Shadbala
+│   │   ├── matching.py         # Guna Milan + doshas
+│   │   └── geocode.py          # offline city lookup
+│   └── references/             # nakshatras, yogas, interpretation
+└── numerology/                 # SKILL 2 — stdlib only, no ephemeris
+    ├── SKILL.md
+    ├── scripts/numerology.py
+    └── references/numbers.md
 ```
+
+## ✅ Tests
+
+```bash
+pip install pytest
+pytest -q          # 11 golden-value checks (SAV=337, BAV totals, dasha closure,
+                   # sign placements, Guna Milan bounds, weekday, geocoder…)
+```
+
+CI runs the suite on Python 3.10–3.12 on every push and PR.
 
 - **`core.py` owns the engine.** Sidereal mode, ayanamsa, planet IDs, nakshatra
   and dasha constants, and local→UT time conversion all live in one file. It uses

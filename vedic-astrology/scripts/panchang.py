@@ -54,6 +54,15 @@ YOGA_NAMES = [
 MOVABLE_KARANAS = ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti"]
 FIXED_KARANAS = ["Shakuni", "Chatushpada", "Naga", "Kimstughna"]
 
+# Which 1-of-8 daytime segment each inauspicious period falls in, by weekday.
+# Daytime (sunrise->sunset) is split into 8 equal parts; segment 1 = first part.
+RAHU_KAAL_SEG = {"Sunday": 8, "Monday": 2, "Tuesday": 7, "Wednesday": 5,
+                 "Thursday": 6, "Friday": 4, "Saturday": 3}
+YAMAGANDA_SEG = {"Sunday": 5, "Monday": 4, "Tuesday": 3, "Wednesday": 2,
+                 "Thursday": 1, "Friday": 7, "Saturday": 6}
+GULIKA_SEG = {"Sunday": 7, "Monday": 6, "Tuesday": 5, "Wednesday": 4,
+              "Thursday": 3, "Friday": 2, "Saturday": 1}
+
 
 def _karana_name(index: int) -> str:
     """index in 0..59 (two karanas per tithi). Maps to the classical scheme."""
@@ -91,10 +100,13 @@ def compute_panchang(args) -> dict:
     # 4. Karana — half-tithi.
     karana_index = int(elong // 6) % 60            # 0..59
 
-    # 5. Vara — civil weekday. (Vedic day starts at sunrise; we use the civil
-    #    weekday of the given local date for simplicity and clarity.)
-    import swisseph as swe
-    weekday = WEEKDAYS[int((jd + 0.5) % 7)]        # jd 0 = Monday noon convention
+    # 5. Vara — sunrise-to-sunrise weekday (Vedic convention).
+    weekday = core.vedic_vara(jd, args.lat, args.lon, args.tz)
+
+    # Sunrise/sunset + day periods (Rahu Kaal etc.) for the local date.
+    jd_midnight = core.to_julian_ut(y, m, d, 0, 0, 0, args.tz)
+    sunrise_jd, sunset_jd = core.next_rise_set(jd_midnight, args.lat, args.lon)
+    day_periods = _day_periods(sunrise_jd, sunset_jd, weekday, args.tz)
 
     return {
         "input": {
@@ -108,8 +120,42 @@ def compute_panchang(args) -> dict:
                       "lord": core.DASHA_SEQUENCE[nak_index % 9]},
         "yoga": {"name": YOGA_NAMES[yoga_index]},
         "karana": {"name": _karana_name(karana_index)},
+        "sunrise": _fmt_clock(sunrise_jd, args.tz),
+        "sunset": _fmt_clock(sunset_jd, args.tz),
+        **day_periods,
         "sun_longitude": round(sun_lon, 4),
         "moon_longitude": round(moon_lon, 4),
+    }
+
+
+def _fmt_clock(jd, tz_name):
+    """Format a Julian Day (UT) as local HH:MM, or None."""
+    if jd is None:
+        return None
+    return core.jd_to_local(jd, tz_name).strftime("%H:%M")
+
+
+def _day_periods(sunrise_jd, sunset_jd, weekday, tz_name) -> dict:
+    """Compute Rahu Kaal, Yamaganda, Gulika (1/8 of daytime) and Abhijit muhurta."""
+    if sunrise_jd is None or sunset_jd is None:
+        return {"rahu_kaal": None, "yamaganda": None, "gulika": None, "abhijit": None}
+    day_len = sunset_jd - sunrise_jd
+    seg = day_len / 8.0
+
+    def window(segment_index_1based):
+        start = sunrise_jd + (segment_index_1based - 1) * seg
+        return f"{_fmt_clock(start, tz_name)}–{_fmt_clock(start + seg, tz_name)}"
+
+    # Abhijit muhurta: 8th of 15 equal daytime muhurtas (straddles solar noon).
+    mu = day_len / 15.0
+    abhijit_start = sunrise_jd + 7 * mu
+    abhijit = f"{_fmt_clock(abhijit_start, tz_name)}–{_fmt_clock(abhijit_start + mu, tz_name)}"
+
+    return {
+        "rahu_kaal": window(RAHU_KAAL_SEG[weekday]),
+        "yamaganda": window(YAMAGANDA_SEG[weekday]),
+        "gulika": window(GULIKA_SEG[weekday]),
+        "abhijit": abhijit,
     }
 
 
@@ -129,6 +175,15 @@ def render_text(result: dict) -> str:
                  f"(lord {result['nakshatra']['lord']})")
     lines.append(f"  Yoga           : {result['yoga']['name']}")
     lines.append(f"  Karana         : {result['karana']['name']}")
+    if result.get("sunrise"):
+        lines.append("-" * 50)
+        lines.append(f"  Sunrise / Sunset: {result['sunrise']} / {result['sunset']}")
+    lines.append("-" * 50)
+    lines.append("  Inauspicious / auspicious windows (local time):")
+    lines.append(f"  Rahu Kaal      : {result.get('rahu_kaal') or 'n/a'}")
+    lines.append(f"  Yamaganda      : {result.get('yamaganda') or 'n/a'}")
+    lines.append(f"  Gulika Kaal    : {result.get('gulika') or 'n/a'}")
+    lines.append(f"  Abhijit Muhurta: {result.get('abhijit') or 'n/a'}  (auspicious)")
     lines.append("=" * 50)
     return "\n".join(lines)
 

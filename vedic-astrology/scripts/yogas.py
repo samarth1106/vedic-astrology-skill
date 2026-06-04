@@ -44,6 +44,17 @@ def _same_house(planets: dict, a: str, b: str) -> bool:
     return planets[a]["house"] == planets[b]["house"]
 
 
+def _associated(planets: dict, a: str, b: str) -> bool:
+    """Two planets are 'associated' if conjunct OR in mutual/one-way Vedic aspect.
+
+    This is the classical basis for most yogas — conjunction was v1's only test,
+    which missed the majority of aspect-formed yogas.
+    """
+    if _same_house(planets, a, b):
+        return True
+    return core.aspects_planet(a, b, planets) or core.aspects_planet(b, a, planets)
+
+
 def detect_yogas(chart: dict) -> list[dict]:
     planets = chart["planets"]
     asc_sign = chart["ascendant"]["sign_num"]
@@ -59,12 +70,15 @@ def detect_yogas(chart: dict) -> list[dict]:
             "note": "Associated with intelligence, respect, and lasting reputation.",
         })
 
-    # --- Budhaditya: Sun + Mercury conjunct -----------------------------------
+    # --- Budhaditya: Sun + Mercury conjunct (combustion weakens it) ------------
     if _same_house(planets, "Sun", "Mercury"):
+        note = "Linked to intellect, communication skill, and analytical ability."
+        if planets["Mercury"].get("combust"):
+            note += " NOTE: Mercury is combust (astangata) here, which classically dilutes the yoga."
         found.append({
             "name": "Budhaditya Yoga",
             "rule": "Sun and Mercury occupy the same sign/house.",
-            "note": "Linked to intellect, communication skill, and analytical ability.",
+            "note": note,
         })
 
     # --- Chandra-Mangala: Moon + Mars conjunct --------------------------------
@@ -87,7 +101,8 @@ def detect_yogas(chart: dict) -> list[dict]:
                 "note": "A Mahapurusha yoga — marks pronounced strength of this planet's significations.",
             })
 
-    # --- Simplified Raj yoga: a kendra lord conjunct a trikona lord -----------
+    # --- Raja yoga: a kendra lord ASSOCIATED with a trikona lord --------------
+    # Association = conjunction OR mutual/one-way Vedic aspect (v2 upgrade).
     kendra_lords = {core.SIGN_LORD[((asc_sign - 1 + (h - 1)) % 12) + 1] for h in KENDRAS}
     trikona_lords = {core.SIGN_LORD[((asc_sign - 1 + (h - 1)) % 12) + 1] for h in TRIKONAS}
     raj_pairs = []
@@ -95,16 +110,20 @@ def detect_yogas(chart: dict) -> list[dict]:
     for i in range(len(grahas)):
         for j in range(i + 1, len(grahas)):
             a, b = grahas[i], grahas[j]
+            if not ((a in kendra_lords and b in trikona_lords) or
+                    (b in kendra_lords and a in trikona_lords)):
+                continue
             if _same_house(planets, a, b):
-                if (a in kendra_lords and b in trikona_lords) or \
-                   (b in kendra_lords and a in trikona_lords):
-                    raj_pairs.append(f"{a}+{b}")
+                raj_pairs.append(f"{a}+{b} (conjunction)")
+            elif _associated(planets, a, b):
+                raj_pairs.append(f"{a}+{b} (mutual aspect)")
     if raj_pairs:
         found.append({
-            "name": "Raja Yoga (simplified)",
-            "rule": f"Kendra lord conjunct trikona lord: {', '.join(raj_pairs)}.",
+            "name": "Raja Yoga",
+            "rule": f"Kendra lord associated with trikona lord: {', '.join(raj_pairs)}.",
             "note": "A Raja yoga association — classically a marker of status and success. "
-                    "(Simplified detection: conjunction only, not aspects/exchange.)",
+                    "(v2 detects conjunction AND Vedic aspect; sign-exchange/parivartana "
+                    "is still not yet covered — see references/yogas.md.)",
         })
 
     return found
