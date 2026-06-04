@@ -1,9 +1,16 @@
 # Astro Claude — the seeker's reading
 
-`astro_claude.py` is the friendly front door. It runs the intake, then one
-consolidated, plain-language reading with the astrological "why" behind every
-statement. Planets are named in Hindi (Surya, Chandra, Mangal, Budh, Guru,
+`astro_claude.py` is the friendly front door. It runs the intake and computes the
+full picture — but you **deliver it as a conversation, not a single dump**. Its
+output is your *source material*; open with today's sky plus the one most striking,
+true hook, then let the seeker pull threads. The astrological "why" sits behind
+every statement. Planets are named in Hindi (Surya, Chandra, Mangal, Budh, Guru,
 Shukra, Shani, Rahu, Ketu).
+
+**The discussion engine lives in `references/conversation.md` — load it for every
+reading.** It defines the reveal loop, trust-calibration, the chart-as-map gates,
+the investment questions, the daily return hook, and the guardrails (stay on-topic,
+never invent a factor, be firm on exact birth time, no spend pressure).
 
 ## Intake (always first)
 

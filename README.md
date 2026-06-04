@@ -33,7 +33,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 
 | Command | What it computes |
 |---------|------------------|
-| **Astro Claude** (`astro_claude.py`) | **The guided seeker's reading** — **opens with today's Panchang + how the stars are aligned today**, then name + age + life stage, career & working-away-from-home analysis, a good time to join a job, **gemstone WEAR/AVOID for your Lagna**, and Rudraksha advice — all reasoned, Hindi planet names |
+| **Astro Claude** (`astro_claude.py`) | **The guided seeker's reading**, delivered as a **two-way conversation** (`references/conversation.md`) — opens with today's Panchang + how the stars are aligned today, then reveals the chart thread by thread: trust-calibration on a real dated transit, a chart-as-map of 7 life gates, and a personalised daily return hook. Covers name + age + life stage, career & working-away-from-home, a good time to join a job, **gemstone WEAR/AVOID for your Lagna**, Rudraksha — all reasoned, Hindi planet names |
 | **Full report** (`full_report.py`) | A single **shareable PDF** (via fpdf2) or **HTML** bundling the whole reading — **opens with today's Panchang + sky alignment** — plus birth-chart table + South/North Indian kundli diagram |
 | **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
 | **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
@@ -186,8 +186,8 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── rectify.py          # birth-time rectification by event-fitting
 │   │   ├── matching.py         # Guna Milan + doshas
 │   │   └── geocode.py          # offline city lookup
-│   └── references/             # answer-book, astro-claude, dasha-effects, gochar,
-│                               # interpretation, nakshatras, vargas, yogas
+│   └── references/             # conversation, answer-book, astro-claude, dasha-effects,
+│                               # gochar, interpretation, nakshatras, vargas, yogas
 └── numerology/                 # SKILL 2 — stdlib only, no ephemeris
     ├── SKILL.md
     ├── scripts/numerology.py
