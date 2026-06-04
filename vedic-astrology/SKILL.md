@@ -88,8 +88,18 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | House-by-house / bhava report / "read my 7th/10th house" / house lords | `houses.py` |
 | Remedies / upaya / gemstone / mantra / which planet to strengthen | `remedies.py` |
 | Draw / visualise the chart / North or South Indian kundli diagram | `chart.py` |
+| Lucky day / colour / number / direction / metal / which-colour-car | `lucky.py` |
 | Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
 | Look up a city's coordinates + timezone | `geocode.py` |
+
+**Answering ANY seeker question:** `references/answer-book.md` maps every common
+question (career, money, marriage, children, health, education, property,
+travel, spirituality, timing, legal, numerology) to the exact tool **and the
+chart factor the answer rests on**. Consult it so that **no answer is ever given
+without its astrological reason** — state the factor (house / karaka / dasha /
+varga / transit / number), then the reading, then the disclaimer. Where a
+question is not chart-determinable (loyalty, a verdict, another's free choice,
+exact child count, a precise country), say so and give indications only.
 
 **Tip:** if the user gives a city instead of coordinates, run
 `python3 geocode.py "<city>"` first to resolve `--lat --lon --tz`, then feed those

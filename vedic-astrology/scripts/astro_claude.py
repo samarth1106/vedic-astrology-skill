@@ -241,7 +241,14 @@ def compute(args) -> dict:
     for n, p in pos.items():
         planets[n] = {"sign": p["sign"], "sign_num": p["sign_num"],
                       "house": core.house_of(p["sign_num"], asc_sign),
-                      "dignity": core.dignity(n, p["sign_num"])}
+                      "dignity": core.dignity(n, p["sign_num"]),
+                      "deg": p["degree_in_sign"]}
+
+    # Atmakaraka (Jaimini soul planet) = the graha at the highest degree within
+    # its sign among the seven (Sun..Saturn). It signifies the soul's chief
+    # lesson and life purpose.
+    atmakaraka = max(("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"),
+                     key=lambda p: planets[p]["deg"])
 
     funcs = {p: functional_nature(p, asc_sign, planets[p]["house"]) for p in core.PLANET_ORDER}
 
@@ -274,6 +281,8 @@ def compute(args) -> dict:
         "lagna": {"sign": asc["sign"], "sign_hi": core.SIGN_HINDI[asc["sign"]],
                   "nakshatra": asc["nakshatra"]},
         "moon_sign": pos["Moon"]["sign"],
+        "atmakaraka": {"planet": atmakaraka, "house": planets[atmakaraka]["house"],
+                       "sign": planets[atmakaraka]["sign"]},
         "life_stage": stage,
         "planets": planets,
         "functional": funcs,
@@ -308,6 +317,10 @@ def render_text(r: dict) -> str:
     A(f"    You are running {core.planet_hi(md)} Mahadasha → {core.planet_hi(ad)} Antardasha —")
     A(f"    this is the planetary 'season' colouring these years. (Run dasha_predict.py")
     A(f"    for the full life-area breakdown.)")
+    ak = r["atmakaraka"]
+    A(f"    Your Atmakaraka (soul planet) is {core.planet_hi(ak['planet'])} in House "
+      f"{ak['house']} — the deepest lesson and purpose of this life centre on its")
+    A(f"    significations; its house shows the arena where your soul does its work.")
     if r["sade_sati"]["active"]:
         A(f"    ⚠ You are currently under SADE SATI (Shani over your Moon sign) — a "
           f"demanding but maturing 7½-year phase.")

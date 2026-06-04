@@ -169,6 +169,26 @@ def test_astro_claude_yogakaraka_for_taurus():
     assert r["functional"]["Saturn"]["is_yogakaraka"] is True
 
 
+def test_lucky_profile():
+    r = run(VEDIC, "lucky.py", REF)
+    assert r["lagna_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
+    assert 1 <= r["moolank"] <= 9
+    assert r["lucky"]["days"] and r["lucky"]["numbers"] and r["lucky"]["directions"]
+
+
+def test_astro_claude_has_atmakaraka():
+    r = run(VEDIC, "astro_claude.py", ["--name", "A"] + REF + ["--on", "2026-06-04"])
+    assert r["atmakaraka"]["planet"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter",
+                                         "Venus", "Saturn"}
+    assert 1 <= r["atmakaraka"]["house"] <= 12
+
+
+def test_dhana_yoga_detected_in_ref():
+    r = run(VEDIC, "yogas.py", REF)
+    names = {y["name"] for y in r["yogas"]}
+    assert "Dhana Yoga" in names
+
+
 def test_full_report_html(tmp_path):
     out = tmp_path / "asha.html"
     proc = subprocess.run(

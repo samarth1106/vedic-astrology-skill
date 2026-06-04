@@ -47,6 +47,8 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Chart diagram** (`chart.py`) | ASCII **North-Indian** (diamond) & **South-Indian** (grid) kundli for any varga |
 | **Matching** (`matching.py`) | **Guna Milan** (36-point Ashtakoot), **Manglik** (Mangal Dosha), **Kaal Sarpa Dosha** |
 | **Geocoder** (`geocode.py`) | Offline city → latitude / longitude / IANA timezone (bundled GeoNames dataset) |
+| **Lucky profile** (`lucky.py`) | Lucky **day, colour, number, direction, metal, gem & deity** from your Lagna lord, Moon lord, yogakaraka + Moolank |
+| **Answer Book** (`references/answer-book.md`) | Routes every seeker question (career, money, marriage, children, health, timing, legal…) to the right tool **and the chart factor behind the answer** |
 | **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), Lo Shu grid, compatibility, personal year, name-correction hints |
 
 Configurable **ayanamsa** (Lahiri / Raman / KP / Yukteshwar / Fagan-Bradley),

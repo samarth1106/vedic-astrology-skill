@@ -126,6 +126,34 @@ def detect_yogas(chart: dict) -> list[dict]:
                     "is still not yet covered — see references/yogas.md.)",
         })
 
+    # --- Dhana yoga: a wealth-house (2/11) lord ASSOCIATED with a wealth/fortune
+    #     house (1/2/5/9/11) lord — the classical signature of accumulated wealth.
+    def _lord_of(h):
+        return core.SIGN_LORD[((asc_sign - 1 + (h - 1)) % 12) + 1]
+    dhana_lords = {_lord_of(h) for h in (2, 11)}
+    support_lords = {_lord_of(h) for h in (1, 2, 5, 9, 11)}
+    dhana_pairs = []
+    for i in range(len(grahas)):
+        for j in range(i + 1, len(grahas)):
+            a, b = grahas[i], grahas[j]
+            if not ((a in dhana_lords and b in support_lords) or
+                    (b in dhana_lords and a in support_lords)):
+                continue
+            if a == b:
+                continue
+            if _same_house(planets, a, b):
+                dhana_pairs.append(f"{a}+{b} (conjunction)")
+            elif _associated(planets, a, b):
+                dhana_pairs.append(f"{a}+{b} (mutual aspect)")
+    if dhana_pairs:
+        found.append({
+            "name": "Dhana Yoga",
+            "rule": f"Wealth-house (2nd/11th) lord linked with a wealth/fortune "
+                    f"(1/2/5/9/11) lord: {', '.join(dhana_pairs)}.",
+            "note": "A wealth-forming combination — supports accumulation of money, "
+                    "especially during the dasha of the planets involved.",
+        })
+
     return found
 
 
