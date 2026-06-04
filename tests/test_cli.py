@@ -145,6 +145,30 @@ def test_houses_report():
     assert all(b["lord"] in planets for b in r["bhavas"])
 
 
+def test_astro_claude_reading():
+    r = run(VEDIC, "astro_claude.py",
+            ["--name", "Asha", "--gender", "female", "--married", "no"] + REF
+            + ["--on", "2026-06-04"])
+    # Age from 1990-08-15 to 2026-06-04 is 35 (birthday not yet reached).
+    assert r["profile"]["age"] == 35
+    assert r["profile"]["name"] == "Asha"
+    # Functional nature is computed for all seven classical planets.
+    for p in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+        assert r["functional"][p]["nature"] in ("yogakaraka", "benefic", "malefic", "neutral")
+    # Gemstone guidance always splits into wear/avoid lists; rudraksha allowed.
+    assert "wear" in r["gemstones"] and "avoid" in r["gemstones"]
+    assert r["rudraksha"]["can_wear"] is True
+
+
+def test_astro_claude_yogakaraka_for_taurus():
+    # Early-morning Delhi birth → Taurus Lagna; Saturn must be the yogakaraka.
+    r = run(VEDIC, "astro_claude.py",
+            ["--name", "T", "--date", "1990-05-10", "--time", "06:00:00",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata"])
+    assert r["lagna"]["sign"] == "Taurus"
+    assert r["functional"]["Saturn"]["is_yogakaraka"] is True
+
+
 def test_remedies_and_chart():
     rem = run(VEDIC, "remedies.py", REF + ["--on", "2026-06-04"])
     assert rem["mahadasha_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter",

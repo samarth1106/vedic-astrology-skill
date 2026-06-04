@@ -118,6 +118,28 @@ PLANETS = {
 }
 PLANET_ORDER = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
 
+# Hindi / Sanskrit names — for seeker-friendly output.
+PLANET_HINDI = {
+    "Sun": "Surya", "Moon": "Chandra", "Mars": "Mangal", "Mercury": "Budh",
+    "Jupiter": "Guru", "Venus": "Shukra", "Saturn": "Shani",
+    "Rahu": "Rahu", "Ketu": "Ketu",
+}
+SIGN_HINDI = {
+    "Aries": "Mesha", "Taurus": "Vrishabha", "Gemini": "Mithuna", "Cancer": "Karka",
+    "Leo": "Simha", "Virgo": "Kanya", "Libra": "Tula", "Scorpio": "Vrishchika",
+    "Sagittarius": "Dhanu", "Capricorn": "Makara", "Aquarius": "Kumbha", "Pisces": "Meena",
+}
+
+
+def planet_hi(name: str) -> str:
+    """'Jupiter (Guru)' style label for a planet."""
+    return f"{name} ({PLANET_HINDI.get(name, name)})"
+
+
+def sign_hi(name: str) -> str:
+    """'Scorpio (Vrishchika)' style label for a sign."""
+    return f"{name} ({SIGN_HINDI.get(name, name)})"
+
 NAKSHATRA_SPAN = 360.0 / 27.0       # 13.3333...
 PADA_SPAN = NAKSHATRA_SPAN / 4.0    # 3.3333...
 NAVAMSA_SPAN = 30.0 / 9.0           # 3.3333...

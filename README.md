@@ -1,4 +1,12 @@
-# 🪔 Vedic Astrology & Numerology — Claude Code Skills (Jyotish + Ank Jyotish)
+# 🪔 Astro Claude — Vedic Astrology & Numerology Claude Code Skills (Jyotish + Ank Jyotish)
+
+> **Astro Claude, for the seeker** — a free, guided Vedic-astrology reader. It asks
+> your name, birth details, and a couple of life questions, then gives one warm,
+> plain-language reading with real depth: where you are in life now, your career
+> and whether you'll thrive away from your birthplace, a good time to take a new
+> job, which gemstones to **wear vs. avoid** for *your* ascendant, and whether you
+> can wear a Rudraksha — every point backed by the astrological reasoning, with
+> planets named in Hindi.
 
 Offline **Vedic / Hindu astrology** and **numerology** skills for
 [Claude Code](https://claude.com/claude-code). Cast a birth chart, compute dasha
@@ -24,6 +32,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 
 | Command | What it computes |
 |---------|------------------|
+| **Astro Claude** (`astro_claude.py`) | **The guided seeker's reading** — name + age + life stage, career & working-away-from-home analysis, a good time to join a job, **gemstone WEAR/AVOID for your Lagna**, and Rudraksha advice — all reasoned, Hindi planet names |
 | **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
 | **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
 | **Dasha Effects** (`dasha_predict.py`) | **Chart-aware interpretation** of the *currently running* period — effects on daily life, mind, career, money, marriage, health, family, enemies, education & spirituality. Personalised by house placement, lordship, dignity, combustion & the Maha↔Antar relationship |
@@ -143,6 +152,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   ├── data/cities.csv         # bundled GeoNames geocoder dataset
 │   ├── scripts/
 │   │   ├── core.py             # the ONLY place Swiss Ephemeris is configured
+│   │   ├── astro_claude.py     # Astro Claude — the guided seeker's reading
 │   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
 │   │   ├── varga.py            # 16 divisional charts + cross-varga strength
