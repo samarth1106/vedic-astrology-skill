@@ -298,9 +298,12 @@ def compute_name_correction(naamank: int, moolank: int, bhagyank: int) -> dict:
 # --- Top-level orchestration -----------------------------------------------
 
 def compute(args) -> dict:
-    y, m, d = (int(x) for x in args.date.split("-"))
-    if not (1 <= m <= 12) or not (1 <= d <= 31):
-        raise ValueError(f"invalid date: {args.date}")
+    import datetime as _dt
+    try:
+        y, m, d = (int(x) for x in args.date.split("-"))
+        _dt.date(y, m, d)            # rejects impossible dates (e.g. Feb 30)
+    except (ValueError, TypeError):
+        raise ValueError(f"invalid date: {args.date!r} (expected a real YYYY-MM-DD)")
 
     moolank = compute_moolank(d, args.keep_master)
     bhagyank = compute_bhagyank(args.date, args.keep_master)

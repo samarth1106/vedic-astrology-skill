@@ -29,6 +29,13 @@ import core
 DAYS_PER_YEAR = 365.25
 
 
+def _fmt_day(dt: datetime) -> str:
+    """Format a datetime rounded to the NEAREST day (not floored), so a boundary
+    at 23:00 doesn't display as the previous calendar date. Adjacent periods
+    share the same cursor value, so end-of-one == start-of-next stays consistent."""
+    return (dt + timedelta(hours=12)).strftime("%Y-%m-%d")
+
+
 def _moon_nakshatra_fraction(jd: float) -> tuple[int, float, float]:
     """Return (nakshatra_index 0..26, fraction_elapsed 0..1, moon_longitude)."""
     moon_lon, _ = core.sidereal_longitude(jd, core.PLANETS["Moon"])
@@ -80,8 +87,8 @@ def compute_dasha(args) -> dict:
         end = cursor + timedelta(days=span_years * DAYS_PER_YEAR)
         entry = {
             "lord": lord,
-            "start": cursor.strftime("%Y-%m-%d"),
-            "end": end.strftime("%Y-%m-%d"),
+            "start": _fmt_day(cursor),
+            "end": _fmt_day(end),
             "years": round(span_years, 3),
         }
         if args.levels >= 2:
@@ -116,8 +123,8 @@ def _antardashas(maha_lord: str, start_dt: datetime, maha_years: float,
         end = cursor + timedelta(days=sub_years * DAYS_PER_YEAR)
         node = {
             "lord": sub_lord,
-            "start": cursor.strftime("%Y-%m-%d"),
-            "end": end.strftime("%Y-%m-%d"),
+            "start": _fmt_day(cursor),
+            "end": _fmt_day(end),
             "years": round(sub_years, 3),
         }
         if levels >= 3:

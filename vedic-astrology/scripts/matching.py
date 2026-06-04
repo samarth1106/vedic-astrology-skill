@@ -208,14 +208,30 @@ def guna_milan(boy, girl) -> dict:
 # Doshas
 # --------------------------------------------------------------------------- #
 def manglik(chart) -> dict:
-    mars_house = chart["planets"]["Mars"]["house"]
-    is_m = mars_house in MANGLIK_HOUSES
+    """Mangal Dosha checked from all three classical reference points — the
+    Lagna, the Moon, and Venus — not just the Lagna. Mars in the 1/2/4/7/8/12
+    from ANY of these flags the dosha (the widely-used strict convention)."""
+    mars_sign = chart["planets"]["Mars"]["sign_num"]
+    mars_house = chart["planets"]["Mars"]["house"]   # from Lagna
+    from_moon = core.house_of(mars_sign, chart["planets"]["Moon"]["sign_num"])
+    from_venus = core.house_of(mars_sign, chart["planets"]["Venus"]["sign_num"])
+    flags = {
+        "lagna": mars_house in MANGLIK_HOUSES,
+        "moon": from_moon in MANGLIK_HOUSES,
+        "venus": from_venus in MANGLIK_HOUSES,
+    }
+    is_m = any(flags.values())
+    triggered = [k for k, v in flags.items() if v]
     return {
         "manglik": is_m,
         "mars_house_from_lagna": mars_house,
-        "note": ("Mars in house " + str(mars_house) +
-                 " from Lagna" + (" → Manglik (Mangal Dosha)." if is_m else " → not Manglik from Lagna.")
-                 + " (Some traditions also check Mars from the Moon and from Venus.)"),
+        "mars_house_from_moon": from_moon,
+        "mars_house_from_venus": from_venus,
+        "triggered_from": triggered,
+        "note": (f"Mars is in house {mars_house} from Lagna, {from_moon} from the Moon, "
+                 f"{from_venus} from Venus. "
+                 + (f"→ Manglik (Mangal Dosha), triggered from: {', '.join(triggered)}."
+                    if is_m else "→ not Manglik from any of the three references.")),
     }
 
 

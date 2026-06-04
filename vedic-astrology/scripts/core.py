@@ -243,10 +243,26 @@ def to_julian_ut(
     """Convert a *local* civil datetime + IANA timezone to a Julian Day (UT).
 
     Example tz_name: 'Asia/Kolkata', 'America/New_York', 'UTC'.
-    Raises pytz.UnknownTimeZoneError on a bad timezone string.
+    Raises pytz.UnknownTimeZoneError on a bad timezone string, and ValueError if
+    the wall-clock time does not exist (DST spring-forward gap) or is ambiguous
+    (fall-back fold) — rather than silently shifting the chart by an hour, which
+    would move the ascendant. The caller must supply a real local time.
     """
     tz = pytz.timezone(tz_name)
-    local_dt = tz.localize(datetime(year, month, day, hour, minute, second))
+    naive = datetime(year, month, day, hour, minute, second)
+    try:
+        # is_dst=None makes pytz reject non-existent / ambiguous wall-clock times.
+        local_dt = tz.localize(naive, is_dst=None)
+    except pytz.exceptions.NonExistentTimeError:
+        raise ValueError(
+            f"{naive} does not exist in {tz_name} — it falls in a daylight-saving "
+            f"spring-forward gap. Check the birth time/zone."
+        )
+    except pytz.exceptions.AmbiguousTimeError:
+        raise ValueError(
+            f"{naive} is ambiguous in {tz_name} — it occurs twice on a daylight-saving "
+            f"fall-back day. Specify which (e.g. add/subtract the DST hour)."
+        )
     utc_dt = local_dt.astimezone(pytz.utc)
     ut_hour = utc_dt.hour + utc_dt.minute / 60.0 + utc_dt.second / 3600.0
     return swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, ut_hour, swe.GREG_CAL)

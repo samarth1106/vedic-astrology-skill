@@ -115,20 +115,32 @@ def find_active_dasha(timeline: dict, target: str) -> tuple[str, str, dict]:
                 if ad["start"] <= target < ad["end"]:
                     antar = ad["lord"]; break
             break
+    # Guard a day-rounding gap at a maha/antar boundary: never return antar=None.
+    if maha is not None and antar is None:
+        ads = (md_node or {}).get("antardashas")
+        antar = ads[0]["lord"] if ads else maha
     return maha, antar, md_node
 
 
 def career_windows(timeline: dict, target: str, asc_sign: int,
                    funcs: dict, limit: int = 4) -> list[dict]:
-    """Upcoming antardashas favourable for joining a job/company, with reasons."""
+    """Current/upcoming antardashas favourable for joining a job/company.
+
+    Skips already-finished periods, labels the currently-running one 'current'
+    and future ones 'upcoming', and de-duplicates by lord so a single favourable
+    planet doesn't fill every slot.
+    """
     out = []
+    seen_lords = set()
     for md in timeline["mahadashas"]:
         if md["end"] < target:
             continue
         for ad in md.get("antardashas", []):
-            if ad["end"] < target:
+            if ad["end"] < target:           # already finished — not actionable
                 continue
             lord = ad["lord"]
+            if lord in seen_lords:
+                continue
             reasons = []
             if lord in ("Jupiter", "Mercury", "Sun"):
                 reasons.append(f"{core.planet_hi(lord)} is a natural significator of "
@@ -141,8 +153,10 @@ def career_windows(timeline: dict, target: str, asc_sign: int,
             if funcs.get(lord, {}).get("is_yogakaraka"):
                 reasons.append("is your Yogakaraka (a prime success planet)")
             if reasons:
-                out.append({"lord": lord, "maha": md["lord"],
+                status = "current" if ad["start"] <= target < ad["end"] else "upcoming"
+                out.append({"lord": lord, "maha": md["lord"], "status": status,
                             "start": ad["start"], "end": ad["end"], "reasons": reasons})
+                seen_lords.add(lord)
             if len(out) >= limit:
                 return out
     return out
@@ -173,7 +187,9 @@ def away_signals(asc_sign: int, planets: dict) -> dict:
     if twelfth_occ:
         signals.append("planets in your 12th house of distant lands/foreign settlement: "
                        + ", ".join(core.planet_hi(p) for p in twelfth_occ))
-    if planets["Moon"]["house"] in DUSTHANA:
+    # Moon in 6th/8th (12th is already covered by the twelfth-house signal above,
+    # so excluding it here avoids counting one placement twice).
+    if planets["Moon"]["house"] in (6, 8):
         signals.append(f"the Moon (Chandra, your mind & sense of belonging) is in House "
                        f"{planets['Moon']['house']} — comfort is found away from the familiar")
     likely = strong_foreign or len(signals) >= 2
@@ -352,8 +368,9 @@ def render_text(r: dict) -> str:
     if r["career_windows"]:
         A(f"    The favourable upcoming planetary windows (Antardashas) are:")
         for w in r["career_windows"]:
+            tag = " [running now]" if w.get("status") == "current" else ""
             A(f"      • {w['start']} → {w['end']}  —  {core.planet_hi(w['lord'])} "
-              f"(under {core.planet_hi(w['maha'])})")
+              f"(under {core.planet_hi(w['maha'])}){tag}")
             A(f"          why: {', '.join(w['reasons'])}.")
         A(f"    Within such a window, pick the actual day by muhurta — a benefic weekday")
         A(f"    (Guru/Budh/Shukra-vaar), an auspicious tithi, and avoiding Rahu Kaal.")

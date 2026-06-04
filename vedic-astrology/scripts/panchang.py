@@ -103,9 +103,16 @@ def compute_panchang(args) -> dict:
     # 5. Vara — sunrise-to-sunrise weekday (Vedic convention).
     weekday = core.vedic_vara(jd, args.lat, args.lon, args.tz)
 
-    # Sunrise/sunset + day periods (Rahu Kaal etc.) for the local date.
-    jd_midnight = core.to_julian_ut(y, m, d, 0, 0, 0, args.tz)
-    sunrise_jd, sunset_jd = core.next_rise_set(jd_midnight, args.lat, args.lon)
+    # Sunrise/sunset + day periods (Rahu Kaal etc.). Anchor on the SAME Vedic day
+    # used for the Vara — the sunrise that opens the day containing `jd` — so the
+    # weekday label and its Rahu-Kaal segment never disagree (matters for a clock
+    # time before sunrise, whose Vedic day began at the previous sunrise).
+    opening_sunrise = core.sunrise_before(jd, args.lat, args.lon)
+    if opening_sunrise is not None:
+        sunrise_jd, sunset_jd = core.next_rise_set(opening_sunrise - 0.05, args.lat, args.lon)
+    else:
+        jd_midnight = core.to_julian_ut(y, m, d, 0, 0, 0, args.tz)
+        sunrise_jd, sunset_jd = core.next_rise_set(jd_midnight, args.lat, args.lon)
     day_periods = _day_periods(sunrise_jd, sunset_jd, weekday, args.tz)
 
     return {

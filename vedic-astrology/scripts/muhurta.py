@@ -119,6 +119,8 @@ def _natal_moon(args):
 def score_day(pan: dict, ev: dict, natal):
     s = 50.0
     why = []
+    # True-neutral branches award 0 so an unremarkable day stays at the 50
+    # baseline ("Fair") rather than drifting up into "Good" on nothing.
     nak = pan["nakshatra"]["name"]
     if nak in ev["nak"]:
         s += 25; why.append(f"+nakshatra {nak} is favourable for this event")
@@ -126,16 +128,12 @@ def score_day(pan: dict, ev: dict, natal):
         s -= 25; why.append(f"-nakshatra {nak} is generally inauspicious")
     elif nak in GENERAL_GOOD:
         s += 12; why.append(f"+nakshatra {nak} is generally auspicious")
-    else:
-        s += 3
 
     vara = pan["vara"]
     if vara in ev["good_days"]:
         s += 12; why.append(f"+{vara} is a favoured weekday")
     elif vara in ev["bad_days"]:
         s -= 15; why.append(f"-{vara} is best avoided for this event")
-    else:
-        s += 3
 
     tnum = pan["tithi"]["number"]; tname = pan["tithi"]["name"]
     if tname == "Amavasya":
@@ -146,8 +144,6 @@ def score_day(pan: dict, ev: dict, natal):
         s += 8; why.append("+Purnima (full moon)")
     elif tnum == 8:
         s -= 6; why.append("-Ashtami")
-    else:
-        s += 4
     if ev.get("krishna_bonus") and pan["tithi"]["paksha"] == "Krishna":
         s += 8; why.append("+Krishna paksha (preferred for surgery)")
 
@@ -162,8 +158,6 @@ def score_day(pan: dict, ev: dict, natal):
     bhadra = pan["karana"]["name"] == "Vishti"
     if bhadra:
         s -= 18; why.append("-Vishti (Bhadra) karana — avoid starting work")
-    else:
-        s += 3
 
     tara = chandra = None
     if natal:
@@ -174,7 +168,7 @@ def score_day(pan: dict, ev: dict, natal):
         if tnumb in TARA_BAD:
             s -= 18; why.append(f"-Tara Bala: {tara} (unfavourable from your Moon)")
         elif tnumb == 1:
-            s += 3; why.append("Tara Bala: Janma (mixed)")
+            why.append("Tara Bala: Janma (mixed)")
         else:
             s += 12; why.append(f"+Tara Bala: {tara} (favourable)")
         day_moon_sign = int(pan["moon_longitude"] // 30) + 1
@@ -184,8 +178,6 @@ def score_day(pan: dict, ev: dict, natal):
             s -= 15; why.append(f"-Chandra Bala: Moon {cpos}th from your Moon (weak)")
         elif cpos in (1, 3, 6, 7, 10, 11):
             s += 8; why.append(f"+Chandra Bala: Moon {cpos}th from your Moon (strong)")
-        else:
-            s += 3
 
     s = max(0.0, min(100.0, s))
     verdict = ("Excellent" if s >= 78 else "Good" if s >= 62 else

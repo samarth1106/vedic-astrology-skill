@@ -352,9 +352,11 @@ def dig_bala(planet: str, lon: float, asc_lon: float) -> float:
 
     Strength = 60 * (angular distance of the planet from its powerless point)/180,
     where the powerless point is the cusp opposite the planet's max-strength
-    direction. With whole-sign houses we approximate cusps by the Lagna degree
-    carried to each house cusp (asc_lon + 30*(house-1)); this is the standard
-    Dig Bala construction and is exact for the angular cusps used here.
+    direction. Cusps are taken as equal divisions from the Lagna degree
+    (asc_lon + 30*(house-1)) — the common Dig Bala construction. Note this is the
+    equal/Sripati-from-ascendant cusp scheme, which differs slightly from the
+    whole-sign houses used elsewhere in the skill; Dig Bala is a directional
+    measure and traditionally uses these angular cusps.
     """
     max_house = DIG_MAX_HOUSE[planet]
     # Powerless point is opposite the max-strength cusp.

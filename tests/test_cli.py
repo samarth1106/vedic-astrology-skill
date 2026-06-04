@@ -169,6 +169,47 @@ def test_astro_claude_yogakaraka_for_taurus():
     assert r["functional"]["Saturn"]["is_yogakaraka"] is True
 
 
+def test_dst_nonexistent_time_rejected():
+    # 02:30 on 2021-03-14 does not exist in America/New_York (spring forward).
+    # The engine must error rather than silently shift the chart by an hour.
+    proc = subprocess.run(
+        [sys.executable, "kundli.py", "--date", "2021-03-14", "--time", "02:30:00",
+         "--lat", "40.71", "--lon", "-74.01", "--tz", "America/New_York", "--json"],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode != 0
+    assert "does not exist" in proc.stderr
+
+
+def test_manglik_three_references():
+    r = run(VEDIC, "matching.py",
+            ["--mode", "dosha", "--date", "1983-12-29", "--time", "18:30:00",
+             "--lat", "26.9196", "--lon", "75.7878", "--tz", "Asia/Kolkata"])
+    m = r["manglik"]
+    for k in ("mars_house_from_lagna", "mars_house_from_moon", "mars_house_from_venus",
+              "triggered_from"):
+        assert k in m
+    # The flag is the OR of the three reference points.
+    refs = {m["mars_house_from_lagna"], m["mars_house_from_moon"], m["mars_house_from_venus"]}
+    expected = bool(refs & {1, 2, 4, 7, 8, 12})
+    assert m["manglik"] is expected
+
+
+def test_career_windows_dedupe_and_status():
+    r = run(VEDIC, "astro_claude.py",
+            ["--name", "X", "--date", "1983-12-29", "--time", "18:30:00",
+             "--lat", "26.9196", "--lon", "75.7878", "--tz", "Asia/Kolkata", "--on", "2026-06-04"])
+    lords = [w["lord"] for w in r["career_windows"]]
+    assert len(lords) == len(set(lords))            # no duplicate lords
+    assert all(w.get("status") in ("current", "upcoming") for w in r["career_windows"])
+
+
+def test_numerology_rejects_impossible_date():
+    proc = subprocess.run(
+        [sys.executable, "numerology.py", "--date", "2025-02-30", "--name", "Test", "--json"],
+        cwd=NUMER, capture_output=True, text=True)
+    assert proc.returncode != 0
+
+
 def test_muhurta_ranking():
     r = run(VEDIC, "muhurta.py",
             ["--event", "marriage", "--from", "2026-11-01", "--to", "2026-11-20",
