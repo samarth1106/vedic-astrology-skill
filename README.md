@@ -165,6 +165,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── astro_claude.py     # Astro Claude — the guided seeker's reading
 │   │   ├── full_report.py      # shareable PDF/HTML report
 │   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
+│   │   ├── lucky.py  mantra.py  muhurta.py
 │   │   ├── sky.py              # Today's Sky — panchang + planetary alignment (opening view)
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
 │   │   ├── varga.py            # 16 Shodasavarga + 4 extra divisions + cross-varga strength
@@ -174,7 +175,8 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── chart.py            # North/South Indian ASCII chart
 │   │   ├── matching.py         # Guna Milan + doshas
 │   │   └── geocode.py          # offline city lookup
-│   └── references/             # nakshatras, yogas, interpretation
+│   └── references/             # answer-book, astro-claude, dasha-effects, gochar,
+│                               # interpretation, nakshatras, vargas, yogas
 └── numerology/                 # SKILL 2 — stdlib only, no ephemeris
     ├── SKILL.md
     ├── scripts/numerology.py
@@ -185,7 +187,7 @@ vedic-astrology-skill/         # git repo (push this)
 
 ```bash
 pip install pytest
-pytest -q          # 11 golden-value checks (SAV=337, BAV totals, dasha closure,
+pytest -q          # 37 golden-value checks (SAV=337, BAV totals, dasha closure,
                    # sign placements, Guna Milan bounds, weekday, geocoder…)
 ```
 

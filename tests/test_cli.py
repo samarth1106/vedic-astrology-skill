@@ -252,6 +252,23 @@ def test_muhurta_ranking():
     assert scores == sorted(scores, reverse=True)
 
 
+def test_muhurta_yoga_names_match_panchang():
+    """Every yoga muhurta scores against must be a real panchang yoga name.
+
+    Guards the class of bug where a misspelling (e.g. 'Shoola' vs 'Shula')
+    silently prevents a penalty/bonus from ever firing.
+    """
+    if VEDIC not in sys.path:
+        sys.path.insert(0, VEDIC)
+    import muhurta
+    import panchang
+    valid = set(panchang.YOGA_NAMES)
+    assert len(valid) == 27
+    scored = muhurta.BAD_YOGAS | muhurta.ROUGH_YOGAS | muhurta.GOOD_YOGAS
+    unknown = scored - valid
+    assert not unknown, f"muhurta scores unknown yoga name(s): {sorted(unknown)}"
+
+
 def test_muhurta_rejects_backwards_range():
     proc = subprocess.run(
         [sys.executable, "muhurta.py", "--event", "vehicle",

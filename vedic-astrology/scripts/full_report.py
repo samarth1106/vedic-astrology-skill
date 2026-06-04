@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import os
 import sys
 from datetime import date, datetime
 
@@ -364,7 +365,15 @@ def main():
     except ImportError:
         pass
     if fmt == "auto":
-        fmt = "pdf" if have_fpdf else "html"
+        # Honor the requested output extension so we never write PDF bytes
+        # into a .html file (or vice versa). Default to PDF when no hint.
+        ext = os.path.splitext(args.out)[1].lower() if args.out else ""
+        if ext == ".html" or ext == ".htm":
+            fmt = "html"
+        elif ext == ".pdf":
+            fmt = "pdf" if have_fpdf else "html"
+        else:
+            fmt = "pdf" if have_fpdf else "html"
     if fmt == "pdf" and not have_fpdf:
         print("NOTE: fpdf2 not installed (pip install fpdf2) — writing HTML instead.", file=sys.stderr)
         fmt = "html"

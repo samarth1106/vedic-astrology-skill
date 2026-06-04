@@ -85,8 +85,8 @@ EVENTS = {
 }
 
 BAD_YOGAS = {"Vyatipata", "Vaidhriti"}
-ROUGH_YOGAS = {"Vishkambha", "Atiganda", "Shoola", "Ganda", "Vyaghata", "Vajra", "Parigha"}
-GOOD_YOGAS = {"Siddhi", "Shubha", "Amrita", "Brahma", "Indra", "Dhruva", "Harshana",
+ROUGH_YOGAS = {"Vishkambha", "Atiganda", "Shula", "Ganda", "Vyaghata", "Vajra", "Parigha"}
+GOOD_YOGAS = {"Siddhi", "Shubha", "Brahma", "Indra", "Dhruva", "Harshana",
               "Saubhagya", "Sukarma", "Priti", "Ayushman", "Sadhya", "Siddha"}
 TARA_NAME = {1: "Janma", 2: "Sampat", 3: "Vipat", 4: "Kshema", 5: "Pratyak",
              6: "Sadhana", 7: "Naidhana", 8: "Mitra", 9: "Parama Mitra"}
