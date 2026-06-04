@@ -135,6 +135,18 @@ def compute_panchang(args) -> dict:
     }
 
 
+def compute(date: str, time: str | None = None, *, lat: float, lon: float,
+            tz: str, ayanamsa: str = core.DEFAULT_AYANAMSA) -> dict:
+    """Programmatic entry point — compute the Panchang without argparse.
+
+    Mirrors compute_panchang() but takes explicit params, so other scripts
+    (sky.py, astro_claude.py) can reuse the almanac directly.
+    """
+    ns = argparse.Namespace(date=date, time=time or "12:00:00", lat=lat, lon=lon,
+                            tz=tz, ayanamsa=ayanamsa)
+    return compute_panchang(ns)
+
+
 def _fmt_clock(jd, tz_name):
     """Format a Julian Day (UT) as local HH:MM, or None."""
     if jd is None:

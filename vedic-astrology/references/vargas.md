@@ -24,6 +24,31 @@ nine grahas and the Lagna, plus a cross-varga strength view.
 | D45 | Akshavedamsa | paternal-line, character |
 | D60 | Shashtiamsa | past-life karma, finest layer |
 
+## Non-classical extra divisions (D5, D6, D8, D11)
+
+Beyond the Shodasavarga, `varga.py` and `chart.py` can also compute four extra
+divisions on request (`--charts D5,D6,D8,D11`, `--charts all+`, or `chart.py
+--varga D11`):
+
+| Dn | Name | Commonly read for |
+|----|------|-------------------|
+| D5  | Panchamsa | fame, power, authority, spiritual merit |
+| D6  | Shashthamsa | health, disease, debts, adversity |
+| D8  | Ashtamsa | sudden events, accidents, longevity, legacies |
+| D11 | Rudramsa / Labhamsa | gains & income (Labha), also destruction (Rudra) |
+
+**Honesty caveat — read this before using them.** These four are **not part of
+the classical Shodasavarga**, and unlike D9/D10 their sign-mapping is **not
+uniquely fixed** in the *Brihat Parashara Hora Shastra*; different traditions and
+software use different rules. This skill therefore computes them with **one
+transparent, documented convention**: the amsas are counted cyclically forward
+from the planet's own sign (the same rule used for D12 / Dwadasamsa). They are
+**always labelled "(non-classical)"** in the output, and are **excluded from the
+cross-varga strength score** (which spans only the classical 16). If your
+lineage uses a different scheme for any of these, treat this skill's result as
+that one convention, not a canonical truth — `core.varga_sign()` is the single
+place to change it.
+
 ## How to read them
 
 - **Confirm the D1 promise in the relevant varga.** A strong 10th-house promise
@@ -49,6 +74,9 @@ nine grahas and the Lagna, plus a cross-varga strength view.
 
 ## Engine
 
-All amsa mappings follow the standard Parashari rules and live in
-`core.varga_sign(lon, D)`. D9 is verified to equal `core.navamsa_sign` across the
-whole zodiac. For cultural/educational use only.
+All amsa mappings live in `core.varga_sign(lon, D)`. The 16 Shodasavarga follow
+the standard Parashari rules; the 4 extras (D5/D6/D8/D11) use the documented
+cyclic convention above. D9 is verified to equal `core.navamsa_sign` across the
+whole zodiac. Every division is built from the **sidereal (Lahiri by default)**
+longitude — the ayanamsa is applied once, then inherited by all charts. For
+cultural/educational use only.

@@ -10,6 +10,25 @@ Shukra, Shani, Rahu, Ketu).
 Name · DOB · **exact** time · birthplace (→ geocode) · gender · married? · (optional)
 working away from birthplace? · any specific question. See SKILL.md.
 
+## Opens with today's sky (always)
+
+Before the personal reading, every Astro Claude output **starts with today's
+sky** — computed by `sky.py` and embedded as the first block:
+
+- **The Hindu Panchang** for the day at the seeker's place — vara (weekday),
+  tithi + paksha, the Moon's nakshatra, yoga, karana, sunrise/sunset, Rahu Kaal
+  (avoid) and the auspicious Abhijit muhurta.
+- **How the stars are aligned today** — the live sidereal position of all nine
+  grahas (sign, nakshatra + pada), what is **retrograde** (review, don't force)
+  or **combust** (dimmed), the **conjunctions** (shared-sign blends), and the
+  **slow-mover backdrop** (Shani, Guru, Rahu/Ketu) that sets the era's tone.
+- **Personalised** — each transiting graha is also counted as a house from the
+  seeker's **natal Moon**, and Saturn's house-from-Moon flags **Sade Sati /
+  Dhaiya** — so the shared sky is tied back to *them* before the reading narrows.
+
+`sky.py` also stands alone (no birth chart) for "what's the panchang today" or
+"how are the stars aligned now". It reuses `panchang.py` for the almanac.
+
 ## What it derives, and how
 
 - **Age & life stage** — age from DOB to `--on`; mapped to a classical 12-year

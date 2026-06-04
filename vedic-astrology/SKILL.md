@@ -1,6 +1,6 @@
 ---
 name: vedic-astrology
-description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, or asks to cast/read a Hindu astrology chart.
+description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
 license: AGPL-3.0
 ---
 
@@ -34,6 +34,15 @@ Then run **`astro_claude.py`** (the orchestrator) for the guided reading, and th
 specialised scripts (`dasha_predict.py`, `gochar.py`, `varga.py`, `houses.py`,
 `remedies.py`, `chart.py`) for any topic they want to go deeper on. Always speak
 plainly first, then add the astrological "why". Always close with the disclaimer.
+
+**Every Astro Claude reading OPENS with today's sky** — first the Hindu
+**Panchang** (vara, tithi, nakshatra, yoga, karana, sunrise/sunset, Rahu Kaal,
+Abhijit muhurta), then a detailed read of **how the planets are aligned today**
+(each graha's sign + nakshatra, what is retrograde or combust, the conjunctions,
+and the slow-mover backdrop of Shani/Guru/Rahu-Ketu), personalised to the
+seeker's natal Moon. `astro_claude.py` prints this automatically as the opening.
+For a **standalone** "what's the panchang today / how are the stars aligned now"
+answer that needs **no birth chart**, run **`sky.py`**.
 
 > **Disclaimer — state this to the user when presenting results.** This skill is
 > for cultural, educational, and entertainment purposes. Astrological readings are
@@ -80,10 +89,11 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Birth chart / kundli / planets / houses / lagna / rashi | `kundli.py` |
 | Life periods / dasha / mahadasha / antardasha / timeline | `dasha.py` |
 | What the CURRENT dasha *means* — effects on life, career, money, marriage, health, family, enemies | `dasha_predict.py` |
+| **Today's sky / how are the stars aligned today / what's the panchang now / current planetary positions (no birth data needed)** | **`sky.py`** |
 | Daily almanac / panchang / tithi / Rahu Kaal / sunrise / muhurta | `panchang.py` |
 | Yogas / chart combinations / raj yoga | `yogas.py` |
 | Planetary strength / Ashtakavarga / Shadbala / bindus | `strength.py` |
-| Divisional charts / vargas / D9 navamsa / D10 dasamsha / career-children-wealth chart | `varga.py` |
+| Divisional charts / vargas / D9 navamsa / D10 dasamsha / career-children-wealth chart (+ optional non-classical D5/D6/D8/D11) | `varga.py` |
 | Transits / gochar / Sade Sati / dhaiya / "what's Saturn doing now" / current sky | `gochar.py` |
 | House-by-house / bhava report / "read my 7th/10th house" / house lords | `houses.py` |
 | Remedies / upaya / gemstone / which planet to strengthen | `remedies.py` |
@@ -144,6 +154,10 @@ python3 dasha_predict.py --date 1990-08-15 --time 14:30:00 \
 python3 panchang.py --date 2026-06-04 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
+# Today's Sky — Panchang + how every graha is aligned today (no birth data; --date defaults to today)
+python3 sky.py --date 2026-06-04 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+
 # Yogas (aspect-aware)
 python3 yogas.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
@@ -152,9 +166,10 @@ python3 yogas.py --date 1990-08-15 --time 14:30:00 \
 python3 strength.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
-# Divisional charts (vargas): D9 marriage, D10 career, cross-varga strength
+# Divisional charts (vargas): D9 marriage, D10 career, cross-varga strength.
+# --charts all = 16 classical; all+ = also D5/D6/D8/D11 (non-classical, labelled)
 python3 varga.py --date 1990-08-15 --time 14:30:00 \
-  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts D9,D10   # or --charts all
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts D9,D10
 
 # Transits + Sade Sati (gochar from natal Moon; --on defaults to today)
 python3 gochar.py --date 1990-08-15 --time 14:30:00 \

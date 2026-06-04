@@ -48,8 +48,8 @@ def _parse_time(t: str):
 def _varga_div(arg: str) -> int:
     tok = arg.strip().upper().lstrip("D")
     n = int(tok) if tok else 1
-    if n not in core.SHODASAVARGA:
-        raise ValueError(f"D{n} is not in the Shodasavarga {core.SHODASAVARGA}")
+    if n not in core.SUPPORTED_VARGAS:
+        raise ValueError(f"D{n} is not supported. Supported: {core.SUPPORTED_VARGAS}")
     return n
 
 

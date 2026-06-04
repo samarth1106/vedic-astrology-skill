@@ -119,6 +119,34 @@ def test_varga_charts_and_strength():
         assert 0 <= s["own_or_exalted_count"] <= 16
 
 
+def test_varga_extra_non_classical_divisions():
+    # D5/D6/D8/D11 lie outside the Shodasavarga; they must compute into valid signs.
+    r = run(VEDIC, "varga.py", REF + ["--charts", "D5,D6,D8,D11"])
+    for d in ("5", "6", "8", "11"):
+        assert d in r["charts"]
+        assert all(1 <= s <= 12 for s in r["charts"][d].values())
+    # Cross-varga strength still spans ONLY the classical 16 (extras are display-only).
+    for p, s in r["strength"].items():
+        assert s["own_or_exalted_count"] <= 16
+
+
+def test_varga_extra_labelled_non_classical_and_rejects_bad():
+    proc = subprocess.run([sys.executable, "varga.py", *REF, "--charts", "D11"],
+                          cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    assert "D11" in proc.stdout and "non-classical" in proc.stdout
+    # A division in no supported set is rejected, not silently approximated.
+    bad = subprocess.run([sys.executable, "varga.py", *REF, "--charts", "D13", "--json"],
+                         cwd=VEDIC, capture_output=True, text=True)
+    assert bad.returncode != 0 and "not supported" in bad.stderr
+
+
+def test_chart_extra_varga_d11():
+    ch = run(VEDIC, "chart.py", REF + ["--varga", "D11"])
+    assert ch["div"] == 11
+    assert sum(len(v) for v in ch["by_sign"].values()) == 9   # all nine grahas placed
+
+
 # --------------------------------------------------------------------------- #
 # Gochar — structure + natal reference + Sade Sati phase house.
 # --------------------------------------------------------------------------- #
@@ -275,7 +303,8 @@ def test_full_report_html(tmp_path):
     assert proc.returncode == 0, proc.stderr
     assert out.exists()
     text = out.read_text(encoding="utf-8")
-    for marker in ("Astro Claude", "Asha", "Birth Chart", "Gemstones", "Rudraksha"):
+    for marker in ("Astro Claude", "Asha", "Birth Chart", "Gemstones", "Rudraksha",
+                   "Today's Sky", "PANCHANG"):
         assert marker in text
 
 
@@ -334,6 +363,62 @@ def test_panchang_weekday():
             ["--date", "2026-06-04", "--lat", "28.6139", "--lon", "77.2090",
              "--tz", "Asia/Kolkata"])
     assert r["vara"] == "Thursday"   # 2026-06-04 is a Thursday
+
+
+# --------------------------------------------------------------------------- #
+# Sky — Today's Sky opens with the Panchang + the live planetary alignment.
+# --------------------------------------------------------------------------- #
+_SIGNS = {"Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra",
+          "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"}
+
+
+def test_sky_today():
+    r = run(VEDIC, "sky.py",
+            ["--date", "2026-06-04", "--lat", "28.6139", "--lon", "77.2090",
+             "--tz", "Asia/Kolkata"])
+    # The Panchang is embedded and the weekday matches.
+    assert r["panchang"]["vara"] == "Thursday"
+    # All nine grahas placed, each with sign / nakshatra / pada / flags.
+    assert {p["planet"] for p in r["planets"]} == {
+        "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"}
+    for p in r["planets"]:
+        assert p["sign"] in _SIGNS
+        assert 1 <= p["pada"] <= 4
+        assert isinstance(p["retrograde"], bool) and isinstance(p["combust"], bool)
+    # Nodes are retrograde by nature, but excluded from the "retrograde" insight.
+    assert "Rahu" not in r["retrograde"] and "Ketu" not in r["retrograde"]
+    # The slow-mover backdrop is exactly the four era-setting bodies.
+    assert {e["planet"] for e in r["slow_movers"]} == {"Saturn", "Jupiter", "Rahu", "Ketu"}
+    assert isinstance(r["conjunctions"], list)
+    # On 2026-06-04 Mercury and Venus share Gemini — a real conjunction.
+    assert any(set(c["planets"]) == {"Mercury", "Venus"} for c in r["conjunctions"])
+
+
+def test_astro_claude_opens_with_today_sky():
+    r = run(VEDIC, "astro_claude.py",
+            ["--name", "Asha"] + REF + ["--on", "2026-06-04"])
+    ts = r["today_sky"]
+    assert ts["panchang"]["vara"] == "Thursday"
+    assert len(ts["planets"]) == 9
+    # Personalised: a Sade Sati flag from the natal Moon, and every transiting
+    # graha counted as a house from that Moon (the personal bridge).
+    assert isinstance(ts["sade_sati"]["active"], bool)
+    assert all("house_from_moon" in p for p in ts["planets"])
+
+
+def test_astro_claude_text_starts_with_panchang():
+    # The human-readable reading must START with the Panchang / sky, before the
+    # personal life narrative.
+    proc = subprocess.run(
+        [sys.executable, "astro_claude.py", "--name", "Asha", *REF, "--on", "2026-06-04"],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    out = proc.stdout
+    i_sky = out.find("TODAY'S SKY")
+    i_panch = out.find("PANCHANG")
+    i_life = out.find("WHERE YOU ARE IN LIFE")
+    assert -1 < i_sky < i_life            # the sky opens the reading
+    assert -1 < i_panch < i_life          # the panchang appears before the life reading
 
 
 # --------------------------------------------------------------------------- #

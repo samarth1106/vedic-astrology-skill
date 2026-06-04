@@ -11,6 +11,17 @@ Honesty rule: where a question cannot be determined from a chart (loyalty,
 certainty of a verdict, a person's free choice), say so plainly and give the
 *indications* only — never a false certainty.
 
+## Today & the Sky (no birth chart needed)
+| Question | Tool | Factor / reason |
+|---|---|---|
+| How are the stars/planets aligned today | **sky** | live sidereal positions of all nine grahas — sign + nakshatra, retrograde/combust, conjunctions, slow-mover backdrop |
+| What's the panchang today / now | sky, panchang | the five limbs (vara, tithi, nakshatra, yoga, karana) + sunrise, Rahu Kaal, Abhijit |
+| Is today a good day generally | sky, panchang | tithi/vara quality, Rahu Kaal to avoid, Abhijit window; for a *specific* event use muhurta |
+| What sign is the Moon/Sun/Saturn in now | sky | current transiting sign + nakshatra of any graha (the Moon sets the day's mood) |
+
+> Astro Claude opens every personal reading with this same "today's sky" block,
+> there personalised (house-from-natal-Moon + Sade Sati).
+
 ## Personal Life & Self
 | Question | Tool | Factor / reason |
 |---|---|---|

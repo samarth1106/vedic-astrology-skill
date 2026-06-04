@@ -9,8 +9,9 @@
 > planets named in Hindi.
 
 Offline **Vedic / Hindu astrology** and **numerology** skills for
-[Claude Code](https://claude.com/claude-code). Cast a birth chart, compute dasha
-periods, generate the daily panchang (with Rahu Kaal & sunrise), detect classical
+[Claude Code](https://claude.com/claude-code). Read **today's sky** (panchang +
+how every planet is aligned now), cast a birth chart, compute dasha periods,
+generate the daily panchang (with Rahu Kaal & sunrise), detect classical
 yogas, score planetary strength (Ashtakavarga + Shadbala), match horoscopes
 (36-point Guna Milan), scan for doshas (Manglik, Kaal Sarpa), and run a full
 numerology profile — entirely on your machine, **with no API keys and no network
@@ -32,15 +33,16 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 
 | Command | What it computes |
 |---------|------------------|
-| **Astro Claude** (`astro_claude.py`) | **The guided seeker's reading** — name + age + life stage, career & working-away-from-home analysis, a good time to join a job, **gemstone WEAR/AVOID for your Lagna**, and Rudraksha advice — all reasoned, Hindi planet names |
-| **Full report** (`full_report.py`) | A single **shareable PDF** (via fpdf2) or **HTML** bundling the whole reading + birth-chart table + South/North Indian kundli diagram |
+| **Astro Claude** (`astro_claude.py`) | **The guided seeker's reading** — **opens with today's Panchang + how the stars are aligned today**, then name + age + life stage, career & working-away-from-home analysis, a good time to join a job, **gemstone WEAR/AVOID for your Lagna**, and Rudraksha advice — all reasoned, Hindi planet names |
+| **Full report** (`full_report.py`) | A single **shareable PDF** (via fpdf2) or **HTML** bundling the whole reading — **opens with today's Panchang + sky alignment** — plus birth-chart table + South/North Indian kundli diagram |
 | **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
 | **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
 | **Dasha Effects** (`dasha_predict.py`) | **Chart-aware interpretation** of the *currently running* period — effects on daily life, mind, career, money, marriage, health, family, enemies, education & spirituality. Personalised by house placement, lordship, dignity, combustion & the Maha↔Antar relationship |
+| **Today's Sky** (`sky.py`) | **The opening view** — today's **Panchang** + a detailed read of **how every graha is aligned now** (sign, nakshatra, retrograde, combustion, conjunctions, slow-mover backdrop). No birth chart needed; optionally personalised (house-from-Moon + Sade Sati) |
 | **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
 | **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction): Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja yoga |
 | **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and **Shadbala** (partial — components honestly labelled) |
-| **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength |
+| **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength, and **4 optional non-classical divisions** (D5/D6/D8/D11, clearly labelled) |
 | **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
 | **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants, aspecting planets, and natural karaka |
 | **Remedies** (`remedies.py`) | Traditional **upaya** (deity, mantra, gemstone, charity) for the dasha lord + weak/afflicted planets — *cultural only, clearly disclaimed* |
@@ -96,6 +98,7 @@ python3 houses.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.209
 python3 remedies.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 chart.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --style both --varga D1
 python3 panchang.py --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+python3 sky.py      --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 yogas.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
 # add --json to any command for machine-readable output
@@ -118,6 +121,8 @@ Once installed, just ask naturally:
 > "Show my D10 career chart and read my 10th house."
 >
 > "Draw my kundli in North Indian style."
+>
+> "How are the stars aligned today? Give me today's sky and panchang."
 >
 > "Give me today's panchang for Mumbai."
 >
@@ -160,8 +165,9 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── astro_claude.py     # Astro Claude — the guided seeker's reading
 │   │   ├── full_report.py      # shareable PDF/HTML report
 │   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
+│   │   ├── sky.py              # Today's Sky — panchang + planetary alignment (opening view)
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
-│   │   ├── varga.py            # 16 divisional charts + cross-varga strength
+│   │   ├── varga.py            # 16 Shodasavarga + 4 extra divisions + cross-varga strength
 │   │   ├── gochar.py           # transits + Sade Sati
 │   │   ├── houses.py           # bhava (house-by-house) report
 │   │   ├── remedies.py         # traditional upaya (cultural only)
@@ -197,8 +203,9 @@ CI runs the suite on Python 3.10–3.12 on every push and PR.
 - Yoga detection is a **curated subset**, not exhaustive — see `references/yogas.md`.
 - Panchang elements change through the day; the tool reports values at the given
   clock time. Vara (weekday) uses the civil date (Vedic days run sunrise-to-sunrise).
-- Divisional charts (the 16 Shodasavarga), Ashtakavarga, transits/gochar, Sade
-  Sati, bhava analysis, remedies, and chart diagrams are now included. Still
+- Divisional charts (the 16 Shodasavarga, plus 4 optional non-classical extras
+  D5/D6/D8/D11), today's-sky panchang/alignment, Ashtakavarga, transits/gochar,
+  Sade Sati, bhava analysis, remedies, and chart diagrams are now included. Still
   **not** covered: a complete Shadbala, alternative dasha systems (Yogini/Jaimini),
   KP sub-lords, and Varshaphal (annual chart).
 - The `varga.py` **VargaBala %** is the skill's own transparent dignity score,

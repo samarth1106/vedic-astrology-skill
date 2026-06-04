@@ -4,7 +4,8 @@ full_report.py — one shareable Astro Claude report (PDF or HTML).
 
 Bundles the whole reading into a single document a seeker can keep: cover with
 their name and birth details, a snapshot (Lagna, Moon, age, life stage, running
-dasha, Sade Sati), the full birth-chart table, the kundli drawn in South- and
+dasha, Sade Sati), today's Panchang + how the planets are aligned today
+(personalised), the full birth-chart table, the kundli drawn in South- and
 North-Indian style, the current-period life-area reading, career & place-of-work
 analysis, the gemstone WEAR/AVOID list for their Lagna, and Rudraksha advice.
 
@@ -33,6 +34,7 @@ import core
 import astro_claude as ac
 import chart as chart_mod
 import dasha_predict as dp
+import sky as sky_mod
 
 
 def _parse_time(t: str):
@@ -131,6 +133,11 @@ def render_html(data: dict) -> str:
         out.append(" &nbsp;·&nbsp; <b style='color:#9a2515'>Sade Sati active</b>")
     out.append(f"<br>Life stage: {_h(r['life_stage'])}</div>")
 
+    # Today's sky — the report opens with the same Panchang + alignment as the reading.
+    out.append("<h2>Today's Sky — Panchang &amp; Planetary Alignment</h2>")
+    sky_text = "\n".join(sky_mod.render_block(r["today_sky"], personal=True))
+    out.append(f"<pre>{_h(sky_text)}</pre>")
+
     # Birth chart table
     out.append("<h2>Birth Chart (Graha Positions)</h2><table>")
     out.append("<tr><th>Planet</th><th>Hindi</th><th>Sign</th><th>Degree</th>"
@@ -208,7 +215,8 @@ def render_html(data: dict) -> str:
 # --------------------------------------------------------------------------- #
 def _ascii(s: str) -> str:
     repl = {"–": "-", "—": "-", "’": "'", "‘": "'", "“": '"', "”": '"',
-            "•": "*", "→": "->", "·": "-", "½": "1/2", "⚠": "[!]", "🕉": ""}
+            "•": "*", "→": "->", "·": "-", "½": "1/2", "⚠": "[!]",
+            "🕉": "", "📿": "", "✨": "", "🪐": "", "🌌": ""}
     for k, v in repl.items():
         s = s.replace(k, v)
     return s.encode("latin-1", "replace").decode("latin-1")
@@ -255,6 +263,9 @@ def render_pdf(data: dict, out_path: str) -> None:
             + ("   [Sade Sati active]" if r["sade_sati"]["active"] else "") + "\n"
             f"Life stage: {r['life_stage']}")
     body(snap)
+
+    H2("Today's Sky - Panchang & Planetary Alignment")
+    mono("\n".join(sky_mod.render_block(r["today_sky"], personal=True)))
 
     H2("Birth Chart (Graha Positions)")
     pdf.set_font("Helvetica", "B", 9)

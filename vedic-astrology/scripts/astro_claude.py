@@ -33,6 +33,7 @@ from datetime import date, datetime
 
 import core
 import dasha as dasha_mod
+import sky as sky_mod
 
 # House groupings.
 TRIKONA = {1, 5, 9}
@@ -290,7 +291,17 @@ def compute(args) -> dict:
     age = _age(args.date, args.on)
     stage = next(s for lo, hi, s in LIFE_STAGE if lo <= age < hi)
 
+    # The reading OPENS with today's Panchang + sky alignment, personalised to
+    # this chart (each transiting graha as a house from the natal Moon/Lagna, and
+    # the Saturn-from-Moon Sade Sati phase). Sampled at noon of --on. Computed
+    # last so its engine re-init does not disturb the natal/transit calc above.
+    today_sky = sky_mod.compute_sky(
+        args.on, "12:00:00", args.lat, args.lon, args.tz, args.ayanamsa,
+        natal={"moon_sign_num": planets["Moon"]["sign_num"], "asc_sign_num": asc_sign},
+    )
+
     return {
+        "today_sky": today_sky,
         "profile": {"name": args.name, "gender": args.gender, "married": args.married,
                     "age": age, "as_of": args.on, "birth": f"{args.date} {args.time}",
                     "away_from_home": args.away},
@@ -324,6 +335,13 @@ def render_text(r: dict) -> str:
       f"{p['gender']}, {'married' if p['married']=='yes' else 'unmarried' if p['married']=='no' else 'marital status not given'}.")
     A(f"  Lagna (Ascendant): {core.sign_hi(r['lagna']['sign'])}, "
       f"nakshatra {r['lagna']['nakshatra']}.   Moon sign: {core.sign_hi(r['moon_sign'])}.")
+    A("-" * 70)
+
+    # Opening: today's Panchang + how the stars are aligned today — the reading
+    # always STARTS here, then narrows to the seeker.
+    A(f"  🌌 TODAY'S SKY — where the heavens stand on {p['as_of']}")
+    A("")
+    L += sky_mod.render_block(r["today_sky"], personal=True)
     A("-" * 70)
 
     # Life stage + dasha

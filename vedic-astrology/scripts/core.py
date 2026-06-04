@@ -340,6 +340,16 @@ def navamsa_sign(lon: float) -> int:
 # The 16 divisions of the Shodasavarga, in standard order, with the life area
 # each is classically read for.
 SHODASAVARGA = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]
+
+# Optional extra divisions that lie OUTSIDE the classical Shodasavarga. Unlike the
+# 16 above, their sign-mapping is not uniquely fixed in BPHS — traditions differ —
+# so the skill computes them with ONE transparent, documented convention (cyclic
+# from the planet's own sign, the same rule as D12/Dwadasamsa) and labels them
+# "(non-classical)" wherever shown. They are NOT mixed into the Shodasavarga
+# strength score. See references/vargas.md.
+EXTRA_VARGAS = [5, 6, 8, 11]
+SUPPORTED_VARGAS = SHODASAVARGA + EXTRA_VARGAS
+
 VARGA_PURPOSE = {
     1: "Rashi — body, self, the whole life",
     2: "Hora — wealth & resources",
@@ -357,6 +367,11 @@ VARGA_PURPOSE = {
     40: "Khavedamsa — auspicious & inauspicious results (maternal)",
     45: "Akshavedamsa — general (paternal), character",
     60: "Shashtiamsa — past-life karma, fine-tuning of all areas",
+    # Non-classical extras (sign-mapping is convention-dependent; see EXTRA_VARGAS).
+    5: "Panchamsa — fame, power & spiritual merit (non-classical)",
+    6: "Shashthamsa — health, debts & adversity (non-classical)",
+    8: "Ashtamsa — sudden events, accidents & longevity (non-classical)",
+    11: "Rudramsa / Labhamsa — gains & income, also destruction (non-classical)",
 }
 
 
@@ -415,8 +430,14 @@ def varga_sign(lon: float, d: int) -> int:
         s = _sign_add([0, 4, 8][modality], part)
     elif d == 60:  # Shashtiamsa — half-degree amsas counted from the sign itself
         s = _sign_add(sign0, int(deg * 2))
+    elif d in (5, 6, 8, 11):
+        # Non-classical extras (Panchamsa/Shashthamsa/Ashtamsa/Rudramsa). BPHS does
+        # not fix a unique sign rule for these, so we use the transparent cyclic
+        # convention (amsas counted forward from the sign itself, as in D12). This
+        # is documented and labelled non-classical; not a claim of canonical truth.
+        s = _sign_add(sign0, part)
     else:
-        raise ValueError(f"Unsupported varga divisor D{d}. Supported: {SHODASAVARGA}")
+        raise ValueError(f"Unsupported varga divisor D{d}. Supported: {SUPPORTED_VARGAS}")
     return s + 1
 
 
