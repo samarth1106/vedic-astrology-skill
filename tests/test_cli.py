@@ -233,6 +233,18 @@ def test_muhurta_rejects_backwards_range():
     assert proc.returncode != 0
 
 
+def test_mantra_goals():
+    r = run(VEDIC, "mantra.py", REF + ["--goal", "all", "--on", "2026-06-04"])
+    assert r["mahadasha_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter",
+                                   "Venus", "Saturn", "Rahu", "Ketu"}
+    assert set(r["goals"]) >= {"wealth", "success", "marriage", "health"}
+    for g, blk in r["goals"].items():
+        assert blk["deity_mantras"]                       # every goal has a deity mantra
+        for p in blk["planetary"]:
+            assert p["mode"] in ("strengthen", "harmonise / pacify")
+            assert p["beej"].startswith("Om")
+
+
 def test_lucky_profile():
     r = run(VEDIC, "lucky.py", REF)
     assert r["lagna_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}

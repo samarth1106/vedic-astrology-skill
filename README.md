@@ -44,6 +44,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
 | **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants, aspecting planets, and natural karaka |
 | **Remedies** (`remedies.py`) | Traditional **upaya** (deity, mantra, gemstone, charity) for the dasha lord + weak/afflicted planets — *cultural only, clearly disclaimed* |
+| **Mantra guidance** (`mantra.py`) | **Goal-specific mantras** (wealth, success, marriage, health, education, children, protection, peace, spirituality) — a deity mantra + the chart's planetary beej mantra (strengthen/pacify) with weekday & japa count |
 | **Chart diagram** (`chart.py`) | ASCII **North-Indian** (diamond) & **South-Indian** (grid) kundli for any varga |
 | **Matching** (`matching.py`) | **Guna Milan** (36-point Ashtakoot), **Manglik** (Mangal Dosha), **Kaal Sarpa Dosha** |
 | **Geocoder** (`geocode.py`) | Offline city → latitude / longitude / IANA timezone (bundled GeoNames dataset) |

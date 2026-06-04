@@ -86,7 +86,8 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Divisional charts / vargas / D9 navamsa / D10 dasamsha / career-children-wealth chart | `varga.py` |
 | Transits / gochar / Sade Sati / dhaiya / "what's Saturn doing now" / current sky | `gochar.py` |
 | House-by-house / bhava report / "read my 7th/10th house" / house lords | `houses.py` |
-| Remedies / upaya / gemstone / mantra / which planet to strengthen | `remedies.py` |
+| Remedies / upaya / gemstone / which planet to strengthen | `remedies.py` |
+| Which mantra for wealth / success / marriage / health / a goal | `mantra.py` |
 | Draw / visualise the chart / North or South Indian kundli diagram | `chart.py` |
 | Lucky day / colour / number / direction / metal / which-colour-car | `lucky.py` |
 | Best date/time for an event / muhurta / shubh muhurat / when to marry-buy-launch-travel-sign | `muhurta.py` |

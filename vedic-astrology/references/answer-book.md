@@ -45,7 +45,8 @@ certainty of a verdict, a person's free choice), say so plainly and give the
 | Why losing money | houses, gochar | 12th (loss) & 6th (debt) activity, malefic-lord dasha, adverse transit |
 | Inherit wealth | houses | 8th house (inheritance/legacies) & its lord |
 | Good period for financial growth | dasha | dasha of wealth/fortune lords |
-| Remove financial obstacles | remedies | gem/mantra/charity for the weak wealth-lord or dasha lord |
+| Remove financial obstacles | remedies, mantra | gem/mantra/charity for the weak wealth-lord or dasha lord |
+| Which mantra for wealth / success / a goal | **mantra** | goal-deity mantra (Lakshmi/Ganesha/Saraswati…) + the beej mantra of the planet ruling the goal's houses, strengthen-vs-pacify by functional nature |
 | Numerology number for wealth | numerology | Moolank/Bhagyank wealth compatibility |
 | Buy stocks/property/invest now | panchang, astro_claude | timing = muhurta + dasha + 5th (speculation)/4th (property) condition |
 
