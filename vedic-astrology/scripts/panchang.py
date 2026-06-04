@@ -1,0 +1,157 @@
+#!/usr/bin/env python3
+"""
+panchang.py — Compute the five limbs (panch-anga) of the Vedic almanac.
+
+The five limbs:
+  1. Tithi    — lunar day, from the Moon-Sun elongation (12° each, 30 tithis).
+  2. Nakshatra— lunar mansion the Moon occupies (13°20' each, 27 nakshatras).
+  3. Yoga     — from (Sun + Moon) longitude (13°20' each, 27 yogas).
+  4. Karana   — half-tithi (60 per lunar month, 11 repeating types).
+  5. Vara     — weekday.
+
+Tithi uses the Moon-minus-Sun difference, so it is ayanamsa-independent.
+Nakshatra and Yoga use sidereal longitudes, so the ayanamsa matters; we compute
+them in the configured sidereal frame for internal consistency.
+
+Usage:
+    python panchang.py --date 2026-06-04 --time 06:00:00 \\
+        --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata \\
+        [--ayanamsa lahiri] [--json]
+
+Note: tithi/nakshatra/yoga/karana change through the day; this reports the
+value at the given clock time (default noon if --time omitted).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+
+import core
+
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday",
+            "Friday", "Saturday", "Sunday"]
+
+# 30 tithi names within a lunar month (Shukla 1-15 then Krishna 1-15).
+TITHI_NAMES = [
+    "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi",
+    "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi",
+    "Trayodashi", "Chaturdashi", "Purnima",
+    "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi",
+    "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi",
+    "Trayodashi", "Chaturdashi", "Amavasya",
+]
+
+YOGA_NAMES = [
+    "Vishkambha", "Priti", "Ayushman", "Saubhagya", "Shobhana", "Atiganda",
+    "Sukarma", "Dhriti", "Shula", "Ganda", "Vriddhi", "Dhruva", "Vyaghata",
+    "Harshana", "Vajra", "Siddhi", "Vyatipata", "Variyana", "Parigha", "Shiva",
+    "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma", "Indra", "Vaidhriti",
+]
+
+# Karana: 7 movable karanas repeat, plus 4 fixed ones around new moon.
+MOVABLE_KARANAS = ["Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti"]
+FIXED_KARANAS = ["Shakuni", "Chatushpada", "Naga", "Kimstughna"]
+
+
+def _karana_name(index: int) -> str:
+    """index in 0..59 (two karanas per tithi). Maps to the classical scheme."""
+    if index == 0:
+        return "Kimstughna"          # first half of Shukla Pratipada
+    if index >= 57:
+        return FIXED_KARANAS[index - 57]  # Shakuni, Chatushpada, Naga
+    return MOVABLE_KARANAS[(index - 1) % 7]
+
+
+def compute_panchang(args) -> dict:
+    core.init_engine(args.ayanamsa)
+    y, m, d = (int(x) for x in args.date.split("-"))
+    t = args.time or "12:00:00"
+    parts = t.split(":")
+    hh = int(parts[0]); mm = int(parts[1]) if len(parts) > 1 else 0
+    ss = int(parts[2]) if len(parts) > 2 else 0
+    jd = core.to_julian_ut(y, m, d, hh, mm, ss, args.tz)
+
+    sun_lon, _ = core.sidereal_longitude(jd, core.PLANETS["Sun"])
+    moon_lon, _ = core.sidereal_longitude(jd, core.PLANETS["Moon"])
+
+    # 1. Tithi — elongation of Moon from Sun (ayanamsa cancels in the difference).
+    elong = (moon_lon - sun_lon) % 360.0
+    tithi_index = int(elong // 12)                 # 0..29
+    paksha = "Shukla" if tithi_index < 15 else "Krishna"
+
+    # 2. Nakshatra — Moon's sidereal mansion.
+    nak_index = int(moon_lon // core.NAKSHATRA_SPAN)
+
+    # 3. Yoga — (Sun + Moon) longitude.
+    yoga_total = (sun_lon + moon_lon) % 360.0
+    yoga_index = int(yoga_total // core.NAKSHATRA_SPAN)
+
+    # 4. Karana — half-tithi.
+    karana_index = int(elong // 6) % 60            # 0..59
+
+    # 5. Vara — civil weekday. (Vedic day starts at sunrise; we use the civil
+    #    weekday of the given local date for simplicity and clarity.)
+    import swisseph as swe
+    weekday = WEEKDAYS[int((jd + 0.5) % 7)]        # jd 0 = Monday noon convention
+
+    return {
+        "input": {
+            "date": args.date, "time": t, "lat": args.lat, "lon": args.lon,
+            "timezone": args.tz, "ayanamsa": args.ayanamsa,
+        },
+        "vara": weekday,
+        "tithi": {"name": TITHI_NAMES[tithi_index], "paksha": paksha,
+                  "number": (tithi_index % 15) + 1, "index": tithi_index + 1},
+        "nakshatra": {"name": core.NAKSHATRAS[nak_index],
+                      "lord": core.DASHA_SEQUENCE[nak_index % 9]},
+        "yoga": {"name": YOGA_NAMES[yoga_index]},
+        "karana": {"name": _karana_name(karana_index)},
+        "sun_longitude": round(sun_lon, 4),
+        "moon_longitude": round(moon_lon, 4),
+    }
+
+
+def render_text(result: dict) -> str:
+    t = result["tithi"]
+    lines = []
+    lines.append("=" * 50)
+    lines.append("  PANCHANG — Vedic Almanac")
+    lines.append("=" * 50)
+    i = result["input"]
+    lines.append(f"  Date: {i['date']} {i['time']} ({i['timezone']})")
+    lines.append(f"  Ayanamsa: {i['ayanamsa'].title()}")
+    lines.append("-" * 50)
+    lines.append(f"  Vara (weekday) : {result['vara']}")
+    lines.append(f"  Tithi          : {t['paksha']} {t['name']} (#{t['number']})")
+    lines.append(f"  Nakshatra      : {result['nakshatra']['name']} "
+                 f"(lord {result['nakshatra']['lord']})")
+    lines.append(f"  Yoga           : {result['yoga']['name']}")
+    lines.append(f"  Karana         : {result['karana']['name']}")
+    lines.append("=" * 50)
+    return "\n".join(lines)
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Compute the daily Panchang.")
+    ap.add_argument("--date", required=True, help="Date YYYY-MM-DD")
+    ap.add_argument("--time", default="12:00:00", help="Local clock time HH:MM[:SS]")
+    ap.add_argument("--lat", type=float, required=True)
+    ap.add_argument("--lon", type=float, required=True)
+    ap.add_argument("--tz", required=True, help="IANA timezone, e.g. Asia/Kolkata")
+    ap.add_argument("--ayanamsa", default=core.DEFAULT_AYANAMSA)
+    ap.add_argument("--json", action="store_true")
+    args = ap.parse_args()
+
+    try:
+        result = compute_panchang(args)
+    except Exception as e:  # noqa: BLE001
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print(json.dumps(result, indent=2) if args.json else render_text(result))
+
+
+if __name__ == "__main__":
+    main()
