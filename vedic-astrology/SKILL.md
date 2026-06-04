@@ -1,6 +1,6 @@
 ---
 name: vedic-astrology
-description: Compute Vedic (Hindu/jyotish) astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods), the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, or asks to cast/read a Hindu astrology chart.
+description: Compute Vedic (Hindu/jyotish) astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, or asks to cast/read a Hindu astrology chart.
 license: AGPL-3.0
 ---
 
@@ -52,6 +52,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 |-------------|--------|
 | Birth chart / kundli / planets / houses / lagna / rashi | `kundli.py` |
 | Life periods / dasha / mahadasha / antardasha / timeline | `dasha.py` |
+| What the CURRENT dasha *means* — effects on life, career, money, marriage, health, family, enemies | `dasha_predict.py` |
 | Daily almanac / panchang / tithi / Rahu Kaal / sunrise / muhurta | `panchang.py` |
 | Yogas / chart combinations / raj yoga | `yogas.py` |
 | Planetary strength / Ashtakavarga / Shadbala / bindus | `strength.py` |
@@ -75,6 +76,10 @@ python3 kundli.py --date 1990-08-15 --time 14:30:00 \
 # Vimshottari dasha (--levels 1 = Mahadasha only, 2 = + Antardasha)
 python3 dasha.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
+
+# What the running dasha MEANS, across 10 life areas (chart-aware; --on defaults to today)
+python3 dasha_predict.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
 
 # Panchang for a date (no birth data needed; --time defaults to noon)
 python3 panchang.py --date 2026-06-04 \
@@ -117,7 +122,15 @@ python3 matching.py --mode dosha --date 1990-08-15 --time 14:30:00 \
 3. For interpretation depth (what a planet-in-house or nakshatra *means*), load
    `references/interpretation.md`. For yoga definitions and caveats, load
    `references/yogas.md`. For nakshatra details, `references/nakshatras.md`.
-   Load these on demand — do not preload them.
+   For how `dasha_predict.py` builds its life-area reading (the karaka → chart →
+   blend model), load `references/dasha-effects.md`. Load these on demand — do
+   not preload them.
+4. **`dasha_predict.py` is the go-to when the user asks "what does my current
+   dasha mean / how will this period affect me".** It already personalises the
+   reading to the chart (house placement, lordship, dignity, combustion, and the
+   Maha↔Antar relationship), so present its output as a *backdrop of
+   probabilities, not a prediction.* Use `--on <date>` to read a past or future
+   period.
 4. Be honest about scope: yoga detection is a **curated subset**, not exhaustive;
    panchang reports values at the given clock time (elements change through the day);
    the weekday uses the civil date (Vedic days run sunrise-to-sunrise).

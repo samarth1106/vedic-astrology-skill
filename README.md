@@ -26,6 +26,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 |---------|------------------|
 | **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
 | **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
+| **Dasha Effects** (`dasha_predict.py`) | **Chart-aware interpretation** of the *currently running* period — effects on daily life, mind, career, money, marriage, health, family, enemies, education & spirituality. Personalised by house placement, lordship, dignity, combustion & the Maha↔Antar relationship |
 | **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
 | **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction): Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja yoga |
 | **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and **Shadbala** (partial — components honestly labelled) |
@@ -69,6 +70,7 @@ cd vedic-astrology/scripts
 
 python3 kundli.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 dasha.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
+python3 dasha_predict.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
 python3 panchang.py --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 yogas.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
@@ -84,6 +86,8 @@ Once installed, just ask naturally:
 > "Cast my kundli — born 15 Aug 1990, 2:30 PM, in New Delhi."
 >
 > "What's my current Vimshottari dasha?"
+>
+> "I'm in Mercury–Venus dasha — how will it affect my career, money, and marriage?"
 >
 > "Give me today's panchang for Mumbai."
 >
@@ -123,7 +127,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   ├── data/cities.csv         # bundled GeoNames geocoder dataset
 │   ├── scripts/
 │   │   ├── core.py             # the ONLY place Swiss Ephemeris is configured
-│   │   ├── kundli.py  dasha.py  panchang.py  yogas.py
+│   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
 │   │   ├── matching.py         # Guna Milan + doshas
 │   │   └── geocode.py          # offline city lookup

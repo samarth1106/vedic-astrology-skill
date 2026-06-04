@@ -79,6 +79,29 @@ def test_dasha_starts_moon_and_closes_120y():
     assert abs((elapsed + sum(m["years"] for m in r["mahadashas"])) - 120.0) < 0.05
 
 
+def test_dasha_predict_active_period_and_areas():
+    # Reference chart (Scorpio Lagna). On 2026-06-04 it runs Jupiter–Venus.
+    r = run(VEDIC, "dasha_predict.py", REF + ["--on", "2026-06-04"])
+    assert r["asc_sign"] == "Scorpio"
+    assert r["active"]["maha"] == "Jupiter"
+    assert r["active"]["antar"] == "Venus"
+    # All ten life areas must be present for both lords.
+    for lord in ("mahadasha", "antardasha"):
+        assert len(r["effects"][lord]) == 10
+    # Personalisation: activated houses = placements + lordships, non-empty.
+    assert r["activated_houses"]
+    # Jupiter rules Scorpio's 2nd & 5th (Sagittarius/Pisces) — lordship must show.
+    assert 2 in r["activated_houses"] and 5 in r["activated_houses"]
+
+
+def test_dasha_predict_rejects_pre_birth_date():
+    proc = subprocess.run(
+        [sys.executable, "dasha_predict.py", *REF, "--on", "1980-01-01", "--json"],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode != 0
+    assert "No dasha covers" in proc.stderr
+
+
 # --------------------------------------------------------------------------- #
 # Ashtakavarga — the hard invariants.
 # --------------------------------------------------------------------------- #
