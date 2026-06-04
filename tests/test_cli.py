@@ -169,6 +169,20 @@ def test_astro_claude_yogakaraka_for_taurus():
     assert r["functional"]["Saturn"]["is_yogakaraka"] is True
 
 
+def test_full_report_html(tmp_path):
+    out = tmp_path / "asha.html"
+    proc = subprocess.run(
+        [sys.executable, "full_report.py", "--name", "Asha", "--gender", "female",
+         "--married", "no", *REF, "--on", "2026-06-04",
+         "--format", "html", "--out", str(out)],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    assert out.exists()
+    text = out.read_text(encoding="utf-8")
+    for marker in ("Astro Claude", "Asha", "Birth Chart", "Gemstones", "Rudraksha"):
+        assert marker in text
+
+
 def test_remedies_and_chart():
     rem = run(VEDIC, "remedies.py", REF + ["--on", "2026-06-04"])
     assert rem["mahadasha_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter",

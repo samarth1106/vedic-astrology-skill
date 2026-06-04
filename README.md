@@ -33,6 +33,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | Command | What it computes |
 |---------|------------------|
 | **Astro Claude** (`astro_claude.py`) | **The guided seeker's reading** — name + age + life stage, career & working-away-from-home analysis, a good time to join a job, **gemstone WEAR/AVOID for your Lagna**, and Rudraksha advice — all reasoned, Hindi planet names |
+| **Full report** (`full_report.py`) | A single **shareable PDF** (via fpdf2) or **HTML** bundling the whole reading + birth-chart table + South/North Indian kundli diagram |
 | **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
 | **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
 | **Dasha Effects** (`dasha_predict.py`) | **Chart-aware interpretation** of the *currently running* period — effects on daily life, mind, career, money, marriage, health, family, enemies, education & spirituality. Personalised by house placement, lordship, dignity, combustion & the Maha↔Antar relationship |
@@ -153,6 +154,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   ├── scripts/
 │   │   ├── core.py             # the ONLY place Swiss Ephemeris is configured
 │   │   ├── astro_claude.py     # Astro Claude — the guided seeker's reading
+│   │   ├── full_report.py      # shareable PDF/HTML report
 │   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
 │   │   ├── varga.py            # 16 divisional charts + cross-varga strength

@@ -76,6 +76,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | User wants… | Script | 
 |-------------|--------|
 | **A full personal reading / "read my chart" / life-career-gemstone-rudraksha in one go / Astro Claude** | **`astro_claude.py`** |
+| **A downloadable / shareable PDF (or HTML) report / "give me my kundli as a PDF"** | **`full_report.py`** |
 | Birth chart / kundli / planets / houses / lagna / rashi | `kundli.py` |
 | Life periods / dasha / mahadasha / antardasha / timeline | `dasha.py` |
 | What the CURRENT dasha *means* — effects on life, career, money, marriage, health, family, enemies | `dasha_predict.py` |
@@ -104,6 +105,11 @@ cd scripts
 python3 astro_claude.py --name "Asha" --gender female --married no \
   --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
+
+# Shareable PDF report (falls back to HTML if fpdf2 isn't installed)
+python3 full_report.py --name "Asha" --gender female --married no \
+  --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --out ./Asha_kundli.pdf
 
 # Kundli (birth chart)
 python3 kundli.py --date 1990-08-15 --time 14:30:00 \
