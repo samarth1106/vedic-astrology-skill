@@ -112,9 +112,13 @@ certainty of a verdict, a person's free choice), say so plainly and give the
 | Increase inner peace | dasha_predict, remedies | spirituality-area reading + the prescribed mantra/charity |
 
 ## Timing (the universal "best time to…")
-Run **panchang.py** for the candidate day(s) to confirm the muhurta (auspicious
-tithi & vara, avoid Rahu Kaal / Yamaganda / inauspicious karana), and check the
-day falls inside a supportive **dasha** and clean **transit**. Event keys: start
+Run **muhurta.py** with the event and a date range — it ranks the days by vara,
+tithi, nakshatra, yoga and karana (and, with birth details, Tara & Chandra Bala)
+and hands back the best window (Abhijit) plus the times to avoid (Rahu Kaal etc.).
+Events: marriage, business, vehicle, house, education, travel, contract,
+investment, surgery, general. For a single named day, **panchang.py** confirms the
+muhurta. Also check the day falls inside a supportive **dasha** and clean
+**transit**. Event-house keys: start
 business → 10th/3rd; vehicle/marriage → Venus & 7th; invest → 5th/2nd; change job
 → 6/10; relocate → away-engine; sign contracts → Mercury/3rd; surgery → avoid Moon
 in a tender sign & malefic tithis. "When will good times begin / difficulties

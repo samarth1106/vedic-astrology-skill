@@ -89,6 +89,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Remedies / upaya / gemstone / mantra / which planet to strengthen | `remedies.py` |
 | Draw / visualise the chart / North or South Indian kundli diagram | `chart.py` |
 | Lucky day / colour / number / direction / metal / which-colour-car | `lucky.py` |
+| Best date/time for an event / muhurta / shubh muhurat / when to marry-buy-launch-travel-sign | `muhurta.py` |
 | Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
 | Look up a city's coordinates + timezone | `geocode.py` |
 
@@ -115,6 +116,11 @@ cd scripts
 python3 astro_claude.py --name "Asha" --gender female --married no \
   --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
+
+# Muhurta — rank the best days for an event over a date range (optional birth = Tara/Chandra Bala)
+python3 muhurta.py --event marriage --from 2026-11-01 --to 2026-12-15 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --top 7 \
+  --birth-date 1990-08-15 --birth-time 14:30:00 --birth-lat 28.61 --birth-lon 77.21 --birth-tz Asia/Kolkata
 
 # Shareable PDF report (falls back to HTML if fpdf2 isn't installed)
 python3 full_report.py --name "Asha" --gender female --married no \

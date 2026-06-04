@@ -169,6 +169,29 @@ def test_astro_claude_yogakaraka_for_taurus():
     assert r["functional"]["Saturn"]["is_yogakaraka"] is True
 
 
+def test_muhurta_ranking():
+    r = run(VEDIC, "muhurta.py",
+            ["--event", "marriage", "--from", "2026-11-01", "--to", "2026-11-20",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata"])
+    assert r["event"] == "marriage"
+    assert len(r["ranked"]) == 20            # inclusive 20-day span
+    for d in r["ranked"]:
+        assert 0 <= d["score"] <= 100
+        assert d["verdict"] in ("Excellent", "Good", "Fair", "Avoid")
+    # Ranked descending.
+    scores = [d["score"] for d in r["ranked"]]
+    assert scores == sorted(scores, reverse=True)
+
+
+def test_muhurta_rejects_backwards_range():
+    proc = subprocess.run(
+        [sys.executable, "muhurta.py", "--event", "vehicle",
+         "--from", "2026-12-01", "--to", "2026-11-01",
+         "--lat", "28.6", "--lon", "77.2", "--tz", "Asia/Kolkata", "--json"],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode != 0
+
+
 def test_lucky_profile():
     r = run(VEDIC, "lucky.py", REF)
     assert r["lagna_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}

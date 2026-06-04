@@ -47,6 +47,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Chart diagram** (`chart.py`) | ASCII **North-Indian** (diamond) & **South-Indian** (grid) kundli for any varga |
 | **Matching** (`matching.py`) | **Guna Milan** (36-point Ashtakoot), **Manglik** (Mangal Dosha), **Kaal Sarpa Dosha** |
 | **Geocoder** (`geocode.py`) | Offline city → latitude / longitude / IANA timezone (bundled GeoNames dataset) |
+| **Muhurta** (`muhurta.py`) | **Electional timing** — ranks the best days in a range for marriage, business, vehicle, house, travel, contracts, surgery… by vara/tithi/nakshatra/yoga/karana (+ Tara & Chandra Bala with birth), Abhijit window, Rahu-Kaal avoid |
 | **Lucky profile** (`lucky.py`) | Lucky **day, colour, number, direction, metal, gem & deity** from your Lagna lord, Moon lord, yogakaraka + Moolank |
 | **Answer Book** (`references/answer-book.md`) | Routes every seeker question (career, money, marriage, children, health, timing, legal…) to the right tool **and the chart factor behind the answer** |
 | **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), Lo Shu grid, compatibility, personal year, name-correction hints |
