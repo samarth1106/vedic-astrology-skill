@@ -51,15 +51,31 @@ significations**, not predictions. Always pair interpretation with the disclaime
 | Aquarius | Air | Fixed | Saturn |
 | Pisces | Water | Dual | Jupiter |
 
+## Graha in Bhava (planet in house)
+
+For *what a specific planet does in a specific house*, run **`houses.py`** — its
+bhava report now prints a concise traditional reading for every planet occupying
+a house (a `→ Planet: …` line in text, `occupant_readings` in `--json`), for all
+nine grahas across the twelve houses. Tune each reading by the planet's **dignity**
+(exalted/own strengthens it; debilitated/combust strains it), the **aspects** on
+the house, and the **house lord's** placement — `houses.py` reports all four.
+
+A house with no occupant is read through its **lord's** placement and the planets
+**aspecting** it, not skipped.
+
 ## A simple reading order
 
 1. **Lagna (1st house) & its lord** — overall constitution and life direction.
 2. **Moon sign & nakshatra** — the emotional mind; the basis of dasha timing.
+   See `nakshatras.md` for the Moon-nakshatra personality notes.
 3. **Sun sign** — soul, vitality, the "Vedic sun-sign."
 4. **Planet dignities** — exalted/own = strong; debilitated = challenged.
-5. **House occupancy** — which life areas (bhavas) hold planets.
+5. **House occupancy** — which planets sit in which bhavas, and what that means
+   (run `houses.py` for the Graha-in-Bhava readings).
 6. **Yogas** — notable combinations (see `yogas.md`).
-7. **Current dasha** — which planetary period is active now (run `dasha.py`).
+7. **Current dasha** — which planetary period is active now (run `dasha.py` and,
+   as a cross-check, the Yogini cycle via `dasha_yogini.py`).
+8. **Strength** — confirm with the six-fold Shadbala + Ashtakavarga (`strength.py`).
 
 ## Dasha interpretation
 

@@ -45,7 +45,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and the **complete six-fold Shadbala** (Sthana, Dig, Kala, Cheshta, Naisargika, Drik — every source computed, methods documented) |
 | **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength, and **4 optional non-classical divisions** (D5/D6/D8/D11, clearly labelled) |
 | **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
-| **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants, aspecting planets, and natural karaka |
+| **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants **with a Graha-in-Bhava reading for each (all 9 planets × 12 houses)**, aspecting planets, and natural karaka |
 | **Remedies** (`remedies.py`) | Traditional **upaya** (deity, mantra, gemstone, charity) for the dasha lord + weak/afflicted planets — *cultural only, clearly disclaimed* |
 | **Mantra guidance** (`mantra.py`) | **Goal-specific mantras** (wealth, success, marriage, health, education, children, protection, peace, spirituality) — a deity mantra + the chart's planetary beej mantra (strengthen/pacify) with weekday & japa count |
 | **Chart diagram** (`chart.py`) | ASCII **North-Indian** (diamond) & **South-Indian** (grid) kundli for any varga |

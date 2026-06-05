@@ -34,10 +34,48 @@ into 4 **padas** of 3°20′. The Vimshottari dasha lord of a nakshatra repeats 
 | 26 | Uttara Bhadrapada | Pisces 3°20′–16°40′ | Saturn | Ahir Budhnya | Serpent | Depth, calm |
 | 27 | Revati | Pisces 16°40′–30° | Mercury | Pushan | Fish | Nourishment, completion |
 
+## Deeper notes — Moon-nakshatra personality (cultural tradition)
+
+Read these for the **Moon's** nakshatra (the janma nakshatra) as the emotional
+mind, and secondarily for the **Lagna** nakshatra as the outer temperament.
+
+| Nakshatra | Personality in brief | Natural footing | Watch for |
+|-----------|----------------------|-----------------|-----------|
+| Ashwini | quick, pioneering, helpful healer | medicine, sport, rescue, new ventures | impulsiveness, restlessness |
+| Bharani | intense, disciplined, carries burdens | creative work, ethics, endurance roles | extremes, judging others |
+| Krittika | sharp, honest, cutting, protective | leadership, critique, cooking, defence | a burning temper, bluntness |
+| Rohini | charming, sensual, creative, fertile | arts, finance, growing things, beauty | possessiveness, comfort-seeking |
+| Mrigashira | curious, searching, gentle, witty | research, travel, writing, design | indecision, never satisfied |
+| Ardra | stormy, brilliant, transformative | tech, analysis, breakthrough work | turbulence, holding grief |
+| Punarvasu | wise, optimistic, returning, nurturing | teaching, counsel, repeated fresh starts | over-extending, restlessness |
+| Pushya | nourishing, dutiful, steady, devoted | care work, service, food, spirituality | rigidity, over-caution |
+| Ashlesha | insightful, hypnotic, strategic | psychology, persuasion, healing, the occult | manipulation, clinging |
+| Magha | regal, proud, tradition-honouring | authority, ceremony, heritage, public life | arrogance, living in the past |
+| Purva Phalguni | warm, pleasure-loving, creative | arts, hospitality, romance, leisure trades | indulgence, vanity |
+| Uttara Phalguni | reliable, generous, contract-keeping | partnership, philanthropy, organising | over-giving, stubbornness |
+| Hasta | skilful, dexterous, clever-handed | crafts, healing hands, trade, detail work | anxiety, over-control |
+| Chitra | brilliant, design-minded, charismatic | architecture, design, fashion, image | ego in appearance, illusion |
+| Swati | independent, adaptable, diplomatic | business, law, travel, negotiation | indecisiveness, scattered ties |
+| Vishakha | goal-driven, ambitious, determined | leadership, research, achievement | obsession, impatience for results |
+| Anuradha | devoted, friendly, organising, loyal | teamwork, friendship, abroad ventures | over-attachment, melancholy |
+| Jyeshtha | senior, protective, courageous, sharp | command, defence, hidden power roles | secrecy, a chip on the shoulder |
+| Mula | investigative, root-seeking, intense | research, philosophy, medicine, reform | upheaval, harsh truth-telling |
+| Purva Ashadha | proud, invigorating, persuasive | debate, water trades, influence | over-confidence, stubborn pride |
+| Uttara Ashadha | principled, enduring, victorious | leadership earned slowly, public good | rigidity, slow to start |
+| Shravana | listening, learning, connecting | teaching, media, advisory, scholarship | over-thinking, gossip |
+| Dhanishta | rhythmic, wealthy, group-minded | music, finance, real estate, teams | restlessness, materialism |
+| Shatabhisha | healing, private, unconventional | medicine, astrology, research, reform | isolation, secrecy |
+| Purva Bhadrapada | idealistic, intense, otherworldly | spirituality, reform, hidden depths | extremism, anxiety |
+| Uttara Bhadrapada | calm, deep, wise, patient | counsel, charity, the depths, endurance | passivity, withdrawal |
+| Revati | gentle, nourishing, guiding, complete | care, travel guidance, art, service | over-sensitivity, dependence |
+
+Pair a nakshatra note with the Moon's **sign** and **house**, the nakshatra's
+**dasha lord** placement, and the running dasha for a personal reading.
+
 ## Padas
 
-Each pada is 3°20′. Padas map to navamsa (D9) signs and are used in finer chart
-work. The skill reports the pada (1–4) per planet; full navamsa charting is out of
-scope for v1.
+Each pada is 3°20′ and maps to a navamsa (D9) sign. The skill reports the pada
+(1–4) per planet and computes the D9 chart in `varga.py`; use the pada to refine
+the nakshatra reading (e.g. which navamsa sign and lord colour the mansion).
 
 > Themes above are traditional cultural associations, not predictions.

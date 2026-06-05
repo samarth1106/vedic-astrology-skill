@@ -194,6 +194,23 @@ def test_houses_report():
     assert all(b["lord"] in planets for b in r["bhavas"])
 
 
+def test_houses_graha_in_bhava_readings():
+    """Every occupant of a house carries a plain-language Graha-in-Bhava reading."""
+    r = run(VEDIC, "houses.py", REF)
+    seen = 0
+    for b in r["bhavas"]:
+        assert set(b["occupant_readings"]) == set(b["occupants"])
+        for n in b["occupants"]:
+            assert isinstance(b["occupant_readings"][n], str)
+            assert len(b["occupant_readings"][n]) > 15
+            seen += 1
+    assert seen == 9                        # all nine grahas placed once across 12 houses
+    # REF: exalted Moon sits in the 7th — its reading must mention partnership.
+    h7 = next(b for b in r["bhavas"] if b["house"] == 7)
+    assert "Moon" in h7["occupants"]
+    assert "marriage" in h7["occupant_readings"]["Moon"].lower()
+
+
 def test_astro_claude_reading():
     r = run(VEDIC, "astro_claude.py",
             ["--name", "Asha", "--gender", "female", "--married", "no"] + REF
