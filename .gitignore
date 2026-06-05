@@ -30,3 +30,11 @@ Thumbs.db
 scratch/
 *.json
 !examples/*.json
+
+# Seeker (personal birth) data — must NEVER be committed. Keep real readings,
+# charts, and birth details in these gitignored paths or in private memory
+# (~/.claude/...). Committed examples/tests use the fictional reference chart only.
+private/
+readings/
+*.seeker.*
+*_seeker.*
