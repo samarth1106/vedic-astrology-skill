@@ -47,6 +47,19 @@ def test_kundli_sign_placements():
     assert p["Mars"]["sign"] == "Aries" and p["Mars"]["dignity"] == "own sign"
 
 
+def test_western_sun_sign_tropical():
+    # Western (tropical) Sun = sidereal Sun + ayanamsa. The REF chart's Vedic Sun
+    # is Cancer (sidereal); born 15 Aug, its Western/tropical Sun is Leo.
+    r = run(VEDIC, "kundli.py", REF)
+    assert r["planets"]["Sun"]["sign"] == "Cancer"   # Vedic (sidereal)
+    assert r["western_sun_sign"] == "Leo"            # Western (tropical)
+    # A late-December birth is a Western Capricorn.
+    r2 = run(VEDIC, "kundli.py",
+             ["--date", "2000-12-25", "--time", "12:00:00",
+              "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata"])
+    assert r2["western_sun_sign"] == "Capricorn"
+
+
 def test_ketu_opposite_rahu():
     r = run(VEDIC, "kundli.py", REF)
     rahu = r["planets"]["Rahu"]["longitude"]

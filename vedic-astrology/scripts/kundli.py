@@ -61,6 +61,7 @@ def compute_kundli(args) -> dict:
         "ayanamsa_deg": round(core.ayanamsa_value(jd), 6),
         "ascendant": asc,
         "planets": planets,
+        "western_sun_sign": core.western_sun_sign(jd),
     }
 
 
@@ -87,6 +88,10 @@ def render_text(result: dict) -> str:
     lines.append(f"  Lagna (Ascendant): {asc['sign']} "
                  f"{core.deg_to_dms(asc['degree_in_sign'])} "
                  f"| {asc['nakshatra']} pada {asc['pada']}")
+    if result.get("western_sun_sign"):
+        lines.append(f"  Western (tropical) Sun sign: {result['western_sun_sign']}  "
+                     f"(popular 'star sign' — tropical zodiac, differs from the "
+                     f"sidereal Vedic chart)")
     lines.append("-" * 60)
     header = (f"  {'Planet':<9}{'Sign':<12}{'Deg':<10}{'Ho':<4}"
               f"{'Nakshatra':<16}{'Pd':<4}{'D9':<12}{'Dignity':<12}{'Flags'}")

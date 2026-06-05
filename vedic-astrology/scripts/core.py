@@ -235,6 +235,20 @@ def ayanamsa_value(jd: float) -> float:
     return swe.get_ayanamsa_ut(jd)
 
 
+def western_sun_sign(jd: float) -> str:
+    """Western (tropical) Sun sign — the popular 'star sign'.
+
+    Western astrology uses the TROPICAL zodiac (tied to the seasons), whereas the
+    rest of this engine is sidereal (Vedic). Tropical longitude = sidereal
+    longitude + ayanamsa, so this converts back to give the familiar Sun sign
+    most people identify with (e.g. born 29 Dec -> Capricorn). Requires
+    init_engine() to have been called.
+    """
+    sid, _ = sidereal_longitude(jd, PLANETS["Sun"])
+    tropical = (sid + ayanamsa_value(jd)) % 360.0
+    return SIGNS[int(tropical // 30)]
+
+
 def to_julian_ut(
     year: int, month: int, day: int,
     hour: int, minute: int, second: int,
