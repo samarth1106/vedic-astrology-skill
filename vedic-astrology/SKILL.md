@@ -1,6 +1,6 @@
 ---
 name: vedic-astrology
-description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, yogini dasha, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
+description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, yogini dasha, birth time rectification, rectify birth time, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
 license: AGPL-3.0
 ---
 
@@ -103,6 +103,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Lucky day / colour / number / direction / metal / which-colour-car | `lucky.py` |
 | Best date/time for an event / muhurta / shubh muhurat / when to marry-buy-launch-travel-sign | `muhurta.py` |
 | Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
+| Birth-time rectification / "is my birth time right" / find/verify birth time from life events | `rectify.py` |
 | Look up a city's coordinates + timezone | `geocode.py` |
 
 **Answering ANY seeker question:** `references/answer-book.md` maps every common
@@ -200,7 +201,21 @@ python3 matching.py --mode milan \
 # Dosha scan for one chart (Manglik + Kaal Sarpa)
 python3 matching.py --mode dosha --date 1990-08-15 --time 14:30:00 \
   --lat 28.61 --lon 77.21 --tz Asia/Kolkata
+
+# Birth-time rectification — rank candidate times against dated life events
+# (event types: marriage, child, job, job_loss, promotion, property, gain, loss,
+#  accident, illness, relocation, foreign, father_death, mother_death, ...)
+python3 rectify.py --date 1983-12-29 --approx-time 18:30 \
+  --lat 26.9196 --lon 75.7878 --tz Asia/Kolkata --window 90 --step 3 \
+  --event 2023-05-01:job_loss --event 2024-02-01:job --event 2025-05-01:job
 ```
+
+**Rectification is a best-FIT, not an exact calculation.** Astrology cannot
+derive a birth time from nothing; `rectify.py` only ranks candidate times by how
+well each explains the *dated life events you supply* (via dasha + transit fit),
+and reports a Lagna-sensitivity scan. More and more-diverse events (marriage,
+children, property, a parent's passing — not just career) tighten the result.
+Always prefer a birth record where one exists.
 
 ### Optional flags
 

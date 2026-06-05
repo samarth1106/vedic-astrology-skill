@@ -46,6 +46,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength, and **4 optional non-classical divisions** (D5/D6/D8/D11, clearly labelled) |
 | **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
 | **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants **with a Graha-in-Bhava reading for each (all 9 planets × 12 houses)**, aspecting planets, and natural karaka |
+| **Rectification** (`rectify.py`) | **Birth-time rectification** by event-fitting — ranks candidate times against your dated life events (dasha + transit fit) and scans Lagna-sensitivity. Honest best-fit, never an "exact" calculation |
 | **Remedies** (`remedies.py`) | Traditional **upaya** (deity, mantra, gemstone, charity) for the dasha lord + weak/afflicted planets — *cultural only, clearly disclaimed* |
 | **Mantra guidance** (`mantra.py`) | **Goal-specific mantras** (wealth, success, marriage, health, education, children, protection, peace, spirituality) — a deity mantra + the chart's planetary beej mantra (strengthen/pacify) with weekday & japa count |
 | **Chart diagram** (`chart.py`) | ASCII **North-Indian** (diamond) & **South-Indian** (grid) kundli for any varga |
@@ -99,6 +100,7 @@ python3 gochar.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.209
 python3 houses.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --house 10
 python3 remedies.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 chart.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --style both --varga D1
+python3 rectify.py  --date 1983-12-29 --approx-time 18:30 --lat 26.9196 --lon 75.7878 --tz Asia/Kolkata --window 90 --step 3 --event 2023-05-01:job_loss --event 2025-05-01:job
 python3 panchang.py --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 sky.py      --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 yogas.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
@@ -147,6 +149,9 @@ latitude, longitude, and IANA timezone**) and then run the right script.
 
 **Unknown birth time?** The Moon sign, dasha, and houses become unreliable. Use a
 noon default only for sign-level information, and treat the Lagna/houses as invalid.
+If you know *roughly* when you were born and have a few dated life events, try
+`rectify.py` — it ranks candidate times by how well each fits those events
+(a best-fit estimate, not a guarantee).
 
 ---
 
@@ -175,6 +180,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── houses.py           # bhava (house-by-house) report
 │   │   ├── remedies.py         # traditional upaya (cultural only)
 │   │   ├── chart.py            # North/South Indian ASCII chart
+│   │   ├── rectify.py          # birth-time rectification by event-fitting
 │   │   ├── matching.py         # Guna Milan + doshas
 │   │   └── geocode.py          # offline city lookup
 │   └── references/             # answer-book, astro-claude, dasha-effects, gochar,

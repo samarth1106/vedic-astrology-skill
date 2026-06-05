@@ -115,6 +115,36 @@ def test_yogini_dasha_antardashas_sum_to_maha():
     assert abs(sub_total - md["years"]) < 1e-3
 
 
+def test_rectify_event_fit_and_sensitivity():
+    # REF chart on 2026-06-04 runs Jupiter-Venus (see test_dasha_predict). A
+    # 'gain' event (karakas Jupiter/Venus) on that date should fit the unshifted
+    # time, and the rectifier must report both a ranking and the Lagna scan.
+    r = run(VEDIC, "rectify.py",
+            ["--date", "1990-08-15", "--approx-time", "14:30",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata",
+             "--window", "30", "--step", "5", "--event", "2026-06-04:gain"])
+    assert "lagna_sensitivity" in r and "ranked" in r and r["best"] is not None
+    # Every candidate carries a numeric score and a Lagna; ranking is descending.
+    scores = [c["total_score"] for c in r["ranked"]]
+    assert scores == sorted(scores, reverse=True)
+    assert all(isinstance(c["total_score"], int) for c in r["ranked"])
+    # The active dasha the rectifier computes must match dasha_predict's engine.
+    centre = min(r["ranked"], key=lambda c: abs(c["delta_min"]))
+    ev = centre["events"][0]
+    assert ev["active"]["maha"] == "Jupiter" and ev["active"]["antar"] == "Venus"
+    # max possible = (MD1+AD2+PD3 + 2 transits) per event.
+    assert r["max_possible_score"] == 8
+
+
+def test_rectify_rejects_unknown_event_type():
+    proc = subprocess.run(
+        [sys.executable, "rectify.py", "--date", "1990-08-15", "--approx-time", "14:30",
+         "--lat", "28.6", "--lon", "77.2", "--tz", "Asia/Kolkata",
+         "--event", "2020-01-01:lottery", "--json"],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode != 0 and "Unknown event type" in proc.stderr
+
+
 def test_dasha_predict_rejects_pre_birth_date():
     proc = subprocess.run(
         [sys.executable, "dasha_predict.py", *REF, "--on", "1980-01-01", "--json"],
