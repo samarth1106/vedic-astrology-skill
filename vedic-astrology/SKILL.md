@@ -205,9 +205,9 @@ python3 matching.py --mode dosha --date 1990-08-15 --time 14:30:00 \
 # Birth-time rectification — rank candidate times against dated life events
 # (event types: marriage, child, job, job_loss, promotion, property, gain, loss,
 #  accident, illness, relocation, foreign, father_death, mother_death, ...)
-python3 rectify.py --date 1983-12-29 --approx-time 18:30 \
-  --lat 26.9196 --lon 75.7878 --tz Asia/Kolkata --window 90 --step 3 \
-  --event 2023-05-01:job_loss --event 2024-02-01:job --event 2025-05-01:job
+python3 rectify.py --date 1990-08-15 --approx-time 14:30 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --window 90 --step 3 \
+  --event 2015-06-20:marriage --event 2018-03-10:child --event 2021-09-01:job
 ```
 
 **Rectification is a best-FIT, not an exact calculation.** Astrology cannot

@@ -19,11 +19,11 @@ Two things are reported:
   2. EVENT-FIT ranking — candidate times scored against your dated events.
 
 Usage:
-    python rectify.py --date 1983-12-29 --approx-time 18:30 \\
-        --lat 26.9196 --lon 75.7878 --tz Asia/Kolkata \\
+    python rectify.py --date 1990-08-15 --approx-time 14:30 \\
+        --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata \\
         --window 60 --step 2 \\
-        --event 2023-05-01:job_loss --event 2024-02-01:job \\
-        --event 2025-05-01:job [--json]
+        --event 2015-06-20:marriage --event 2018-03-10:child \\
+        --event 2021-09-01:job [--json]
 
 --window  half-width of the search in MINUTES around --approx-time (default 60)
 --step    candidate spacing in MINUTES (default 2)

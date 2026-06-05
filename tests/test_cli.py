@@ -278,8 +278,8 @@ def test_dst_nonexistent_time_rejected():
 
 def test_manglik_three_references():
     r = run(VEDIC, "matching.py",
-            ["--mode", "dosha", "--date", "1983-12-29", "--time", "18:30:00",
-             "--lat", "26.9196", "--lon", "75.7878", "--tz", "Asia/Kolkata"])
+            ["--mode", "dosha", "--date", "1988-07-22", "--time", "09:15:00",
+             "--lat", "19.0760", "--lon", "72.8777", "--tz", "Asia/Kolkata"])
     m = r["manglik"]
     for k in ("mars_house_from_lagna", "mars_house_from_moon", "mars_house_from_venus",
               "triggered_from"):
@@ -292,8 +292,8 @@ def test_manglik_three_references():
 
 def test_career_windows_dedupe_and_status():
     r = run(VEDIC, "astro_claude.py",
-            ["--name", "X", "--date", "1983-12-29", "--time", "18:30:00",
-             "--lat", "26.9196", "--lon", "75.7878", "--tz", "Asia/Kolkata", "--on", "2026-06-04"])
+            ["--name", "X", "--date", "1988-07-22", "--time", "09:15:00",
+             "--lat", "19.0760", "--lon", "72.8777", "--tz", "Asia/Kolkata", "--on", "2026-06-04"])
     lords = [w["lord"] for w in r["career_windows"]]
     assert len(lords) == len(set(lords))            # no duplicate lords
     assert all(w.get("status") in ("current", "upcoming") for w in r["career_windows"])

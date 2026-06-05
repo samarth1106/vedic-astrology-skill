@@ -100,7 +100,7 @@ python3 gochar.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.209
 python3 houses.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --house 10
 python3 remedies.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 chart.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --style both --varga D1
-python3 rectify.py  --date 1983-12-29 --approx-time 18:30 --lat 26.9196 --lon 75.7878 --tz Asia/Kolkata --window 90 --step 3 --event 2023-05-01:job_loss --event 2025-05-01:job
+python3 rectify.py  --date 1990-08-15 --approx-time 14:30 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --window 90 --step 3 --event 2015-06-20:marriage --event 2018-03-10:child
 python3 panchang.py --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 sky.py      --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 yogas.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata

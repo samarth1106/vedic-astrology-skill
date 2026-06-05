@@ -16,8 +16,8 @@ It is chart-aware, not generic. The reading layers three things:
      which colours how smoothly the results flow.
 
 Usage:
-    python dasha_predict.py --date 1983-12-29 --time 18:30:00 \\
-        --lat 26.9196 --lon 75.7878 --tz Asia/Kolkata \\
+    python dasha_predict.py --date 1990-08-15 --time 14:30:00 \\
+        --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata \\
         [--on 2026-06-04] [--ayanamsa lahiri] [--json]
 
 --on  the date to interpret for (default: today). The script locates the
