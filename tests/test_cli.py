@@ -136,6 +136,17 @@ def test_rectify_event_fit_and_sensitivity():
     assert r["max_possible_score"] == 8
 
 
+def test_rectify_accepts_divorce_and_separation():
+    # 'divorce'/'separation' are valid event types (7th + dusthana affliction).
+    r = run(VEDIC, "rectify.py",
+            ["--date", "1990-08-15", "--approx-time", "14:30",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata",
+             "--window", "20", "--step", "5",
+             "--event", "2020-02-01:marriage", "--event", "2022-06-01:divorce"])
+    assert r["best"] is not None and len(r["ranked"]) > 0
+    assert {e["type"] for e in r["best"]["events"]} == {"marriage", "divorce"}
+
+
 def test_rectify_rejects_unknown_event_type():
     proc = subprocess.run(
         [sys.executable, "rectify.py", "--date", "1990-08-15", "--approx-time", "14:30",

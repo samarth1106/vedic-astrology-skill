@@ -50,6 +50,8 @@ DAYS_PER_YEAR = 365.25
 # classical; an event only scores when a genuinely relevant planet is active.
 EVENT_TYPES = {
     "marriage":     {"houses": {7, 2, 11}, "karakas": {"Venus", "Jupiter"}},
+    "divorce":      {"houses": {7, 2, 6, 8, 12}, "karakas": {"Venus", "Saturn", "Mars", "Rahu", "Ketu"}},
+    "separation":   {"houses": {7, 2, 6, 8, 12}, "karakas": {"Venus", "Saturn", "Mars", "Rahu", "Ketu"}},
     "child":        {"houses": {5, 9},     "karakas": {"Jupiter"}},
     "job":          {"houses": {10, 6, 2}, "karakas": {"Saturn", "Sun", "Mercury"}},
     "promotion":    {"houses": {10, 11},   "karakas": {"Sun", "Jupiter"}},
