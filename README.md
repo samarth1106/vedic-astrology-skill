@@ -41,7 +41,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Today's Sky** (`sky.py`) | **The opening view** — today's **Panchang** + a detailed read of **how every graha is aligned now** (sign, nakshatra, retrograde, combustion, conjunctions, slow-mover backdrop). No birth chart needed; optionally personalised (house-from-Moon + Sade Sati) |
 | **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
 | **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction): Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja yoga |
-| **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and **Shadbala** (partial — components honestly labelled) |
+| **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and the **complete six-fold Shadbala** (Sthana, Dig, Kala, Cheshta, Naisargika, Drik — every source computed, methods documented) |
 | **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength, and **4 optional non-classical divisions** (D5/D6/D8/D11, clearly labelled) |
 | **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
 | **Bhava report** (`houses.py`) | House-by-house: sign, lord + lord's placement/dignity, occupants, aspecting planets, and natural karaka |
@@ -207,8 +207,8 @@ CI runs the suite on Python 3.10–3.12 on every push and PR.
   clock time. Vara (weekday) uses the civil date (Vedic days run sunrise-to-sunrise).
 - Divisional charts (the 16 Shodasavarga, plus 4 optional non-classical extras
   D5/D6/D8/D11), today's-sky panchang/alignment, Ashtakavarga, transits/gochar,
-  Sade Sati, bhava analysis, remedies, and chart diagrams are now included. Still
-  **not** covered: a complete Shadbala, alternative dasha systems (Yogini/Jaimini),
+  Sade Sati, bhava analysis, remedies, chart diagrams, and the complete six-fold
+  Shadbala are now included. Still **not** covered: Jaimini Chara dasha,
   KP sub-lords, and Varshaphal (annual chart).
 - The `varga.py` **VargaBala %** is the skill's own transparent dignity score,
   **not** the classical Vimshopaka — see `references/vargas.md`. The exact

@@ -355,6 +355,55 @@ def test_bhinnashtakavarga_totals():
 
 
 # --------------------------------------------------------------------------- #
+# Shadbala — the complete six-fold strength, structure + classical invariants.
+# --------------------------------------------------------------------------- #
+def test_shadbala_complete_six_sources():
+    r = run(VEDIC, "strength.py", REF)
+    sb = r["shadbala"]
+    assert sb["complete"] is True
+    planets = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
+    for name in planets:
+        c = sb["planets"][name]["components_virupa"]
+        # All six sources present.
+        for key in ("sthana", "dig_bala", "kala", "cheshta_bala",
+                    "naisargika_bala", "drik_bala"):
+            assert key in c, f"{name} missing Shadbala source {key}"
+        # Sthana subtotal is the exact sum of its five sub-balas.
+        s = c["sthana"]
+        parts = (s["uchcha_bala"] + s["saptavargaja_bala"] + s["ojayugma_bala"]
+                 + s["kendradi_bala"] + s["drekkana_bala"])
+        assert abs(parts - s["subtotal"]) < 0.05
+        # Total in Rupas is positive and meets/decides the classical threshold.
+        assert sb["planets"][name]["total_rupa"] > 0
+        assert isinstance(sb["planets"][name]["meets_required"], bool)
+
+
+def test_shadbala_cheshta_classical_identities():
+    """Sun's Cheshta Bala = its Ayana Bala; Moon's = its Paksha Bala (BPHS)."""
+    r = run(VEDIC, "strength.py", REF)
+    p = r["shadbala"]["planets"]
+    sun = p["Sun"]["components_virupa"]
+    moon = p["Moon"]["components_virupa"]
+    assert abs(sun["cheshta_bala"] - sun["kala"]["ayana_bala"]) < 0.05
+    assert abs(moon["cheshta_bala"] - moon["kala"]["paksha_bala"]) < 0.05
+    # The five star-planets' Cheshta (Seeghra Kendra) is bounded 0..60.
+    for name in ("Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+        assert 0.0 <= p[name]["components_virupa"]["cheshta_bala"] <= 60.0
+
+
+def test_shadbala_time_lords_unique():
+    """Exactly one planet rules the weekday (Vara) and one the Hora."""
+    r = run(VEDIC, "strength.py", REF)
+    p = r["shadbala"]["planets"]
+    vara = [n for n in p if p[n]["components_virupa"]["kala"]["vara_bala"] == 45.0]
+    hora = [n for n in p if p[n]["components_virupa"]["kala"]["hora_bala"] == 60.0]
+    assert len(vara) == 1 and len(hora) == 1
+    # The named lord matches the awarded bala.
+    lords = p[vara[0]]["components_virupa"]["kala"]["lords"]
+    assert lords["vara"] == vara[0]
+
+
+# --------------------------------------------------------------------------- #
 # Guna Milan — max never exceeds 36; identical chart self-matches highly.
 # --------------------------------------------------------------------------- #
 def test_guna_milan_bounds_and_self_match():
