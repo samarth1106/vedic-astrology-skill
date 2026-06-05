@@ -40,7 +40,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Dasha Effects** (`dasha_predict.py`) | **Chart-aware interpretation** of the *currently running* period — effects on daily life, mind, career, money, marriage, health, family, enemies, education & spirituality. Personalised by house placement, lordship, dignity, combustion & the Maha↔Antar relationship |
 | **Today's Sky** (`sky.py`) | **The opening view** — today's **Panchang** + a detailed read of **how every graha is aligned now** (sign, nakshatra, retrograde, combustion, conjunctions, slow-mover backdrop). No birth chart needed; optionally personalised (house-from-Moon + Sade Sati) |
 | **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
-| **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction): Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja yoga |
+| **Yogas** (`yogas.py`) | **Aspect-aware** detection (Vedic drishti, not just conjunction) across the major families: Gajakesari, Budhaditya, Chandra-Mangala, the five Pancha Mahapurusha, Raja, Dhana, the lunar yogas (Sunapha/Anapha/Durudhara/Kemadruma), Adhi, Amala, Vipareeta Raja, Neecha Bhanga, Parivartana, Daridra, Shakata, and the Nabhasa Sankhya/Ashraya yogas |
 | **Strength** (`strength.py`) | **Ashtakavarga** (BAV + SAV, verified to 337) and the **complete six-fold Shadbala** (Sthana, Dig, Kala, Cheshta, Naisargika, Drik — every source computed, methods documented) |
 | **Vargas** (`varga.py`) | Full **Shodasavarga** (16 divisional charts) — D9 marriage, **D10 career**, D7 children, D2 wealth, D24 education, D30 adversity, D60 — plus cross-varga dignity counts & strength, and **4 optional non-classical divisions** (D5/D6/D8/D11, clearly labelled) |
 | **Transits** (`gochar.py`) | **Gochar** from the natal Moon, **Sade Sati** & Dhaiya detection, slow-planet transits, and transit graded by natal Ashtakavarga bindus |
@@ -202,7 +202,9 @@ CI runs the suite on Python 3.10–3.12 on every push and PR.
 
 ### Accuracy & scope notes
 
-- Yoga detection is a **curated subset**, not exhaustive — see `references/yogas.md`.
+- Yoga detection now spans the **major families** but is still not exhaustive
+  (the Nabhasa Akriti/Dala yogas and many nakshatra/varga yogas remain) — see
+  `references/yogas.md`.
 - Panchang elements change through the day; the tool reports values at the given
   clock time. Vara (weekday) uses the civil date (Vedic days run sunrise-to-sunrise).
 - Divisional charts (the 16 Shodasavarga, plus 4 optional non-classical extras

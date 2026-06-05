@@ -310,6 +310,30 @@ def test_dhana_yoga_detected_in_ref():
     assert "Dhana Yoga" in names
 
 
+def test_yogas_lunar_and_nabhasa_invariants():
+    """The lunar yogas are mutually exclusive; exactly one Sankhya yoga fires."""
+    r = run(VEDIC, "yogas.py", REF)
+    names = [y["name"] for y in r["yogas"]]
+    lunar = {"Sunapha Yoga", "Anapha Yoga", "Durudhara Yoga", "Kemadruma Yoga"}
+    assert len(lunar & set(names)) <= 1
+    # 7 planets always occupy 1..7 distinct signs, so one Sankhya yoga is certain.
+    sankhya = [n for n in names if "Nabhasa Sankhya" in n]
+    assert len(sankhya) == 1
+
+
+def test_yogas_expanded_families_in_ref():
+    """The expanded library surfaces the new families on the reference chart."""
+    r = run(VEDIC, "yogas.py", REF)
+    names = {y["name"] for y in r["yogas"]}
+    # REF (Scorpio Lagna) has a Moon<->Venus sign exchange and a 6/8/12-lord
+    # in a dusthana.
+    assert "Vipareeta Raja Yoga" in names
+    assert any(n.startswith("Parivartana Yoga") for n in names)
+    # Every detected yoga carries a rule and a plain-language note.
+    for y in r["yogas"]:
+        assert y["rule"] and y["note"]
+
+
 def test_full_report_html(tmp_path):
     out = tmp_path / "asha.html"
     proc = subprocess.run(
