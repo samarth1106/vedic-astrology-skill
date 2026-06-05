@@ -1,6 +1,6 @@
 ---
 name: vedic-astrology
-description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
+description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, yogini dasha, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
 license: AGPL-3.0
 ---
 
@@ -88,6 +88,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | **A downloadable / shareable PDF (or HTML) report / "give me my kundli as a PDF"** | **`full_report.py`** |
 | Birth chart / kundli / planets / houses / lagna / rashi | `kundli.py` |
 | Life periods / dasha / mahadasha / antardasha / timeline | `dasha.py` |
+| Yogini dasha / 36-year dasha / cross-check the timing against Vimshottari | `dasha_yogini.py` |
 | What the CURRENT dasha *means* — effects on life, career, money, marriage, health, family, enemies | `dasha_predict.py` |
 | **Today's sky / how are the stars aligned today / what's the panchang now / current planetary positions (no birth data needed)** | **`sky.py`** |
 | Daily almanac / panchang / tithi / Rahu Kaal / sunrise / muhurta | `panchang.py` |
@@ -144,6 +145,10 @@ python3 kundli.py --date 1990-08-15 --time 14:30:00 \
 
 # Vimshottari dasha (--levels 1 = Mahadasha only, 2 = + Antardasha)
 python3 dasha.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
+
+# Yogini dasha (36-year cycle; --levels 2 adds antardashas, --years projects N years)
+python3 dasha_yogini.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
 
 # What the running dasha MEANS, across 10 life areas (chart-aware; --on defaults to today)

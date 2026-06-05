@@ -37,6 +37,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Full report** (`full_report.py`) | A single **shareable PDF** (via fpdf2) or **HTML** bundling the whole reading — **opens with today's Panchang + sky alignment** — plus birth-chart table + South/North Indian kundli diagram |
 | **Kundli** (`kundli.py`) | D1 Rashi chart — sidereal positions, signs, whole-sign houses, Lagna, nakshatra + pada, **D9 navamsa**, dignity, **vargottama** & **combustion** flags, retrogrades |
 | **Vimshottari Dasha** (`dasha.py`) | 120-year Mahadasha / Antardasha / **Pratyantardasha** timeline from the Moon's nakshatra |
+| **Yogini Dasha** (`dasha_yogini.py`) | The **36-year**, 8-Yogini cycle (Mangala…Sankata) with antardashas — a companion timing system to cross-read against Vimshottari |
 | **Dasha Effects** (`dasha_predict.py`) | **Chart-aware interpretation** of the *currently running* period — effects on daily life, mind, career, money, marriage, health, family, enemies, education & spirituality. Personalised by house placement, lordship, dignity, combustion & the Maha↔Antar relationship |
 | **Today's Sky** (`sky.py`) | **The opening view** — today's **Panchang** + a detailed read of **how every graha is aligned now** (sign, nakshatra, retrograde, combustion, conjunctions, slow-mover backdrop). No birth chart needed; optionally personalised (house-from-Moon + Sade Sati) |
 | **Panchang** (`panchang.py`) | The five limbs (Tithi, Nakshatra, Yoga, Karana, **sunrise-based Vara**) plus **sunrise/sunset, Rahu Kaal, Yamaganda, Gulika, Abhijit muhurta** |
@@ -91,6 +92,7 @@ cd vedic-astrology/scripts
 
 python3 kundli.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 dasha.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
+python3 dasha_yogini.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --levels 2
 python3 dasha_predict.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
 python3 varga.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts D9,D10
 python3 gochar.py   --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
@@ -164,7 +166,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── core.py             # the ONLY place Swiss Ephemeris is configured
 │   │   ├── astro_claude.py     # Astro Claude — the guided seeker's reading
 │   │   ├── full_report.py      # shareable PDF/HTML report
-│   │   ├── kundli.py  dasha.py  dasha_predict.py  panchang.py  yogas.py
+│   │   ├── kundli.py  dasha.py  dasha_yogini.py  dasha_predict.py  panchang.py  yogas.py
 │   │   ├── lucky.py  mantra.py  muhurta.py
 │   │   ├── sky.py              # Today's Sky — panchang + planetary alignment (opening view)
 │   │   ├── strength.py         # Ashtakavarga + Shadbala

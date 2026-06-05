@@ -94,6 +94,27 @@ def test_dasha_predict_active_period_and_areas():
     assert 2 in r["activated_houses"] and 5 in r["activated_houses"]
 
 
+def test_yogini_dasha_start_and_cycle_closure():
+    # REF Moon is in Rohini (nakshatra 4): (4+3) mod 8 = 7 -> Siddha (Venus).
+    r = run(VEDIC, "dasha_yogini.py", REF + ["--levels", "1"])
+    assert r["system"] == "Yogini Dasha"
+    assert r["cycle_years"] == 36
+    assert r["starting_yogini"] == "Siddha" and r["starting_lord"] == "Venus"
+    # The eight full periods after the partial first must sum to the 36-yr cycle.
+    fulls = [m["years"] for m in r["mahadashas"][1:9]]
+    assert abs(sum(fulls) - 36.0) < 1e-6
+    # Balance never exceeds the first Yogini's full length (Siddha = 7 yrs).
+    assert 0 < r["balance_at_birth_years"] <= 7.0
+
+
+def test_yogini_dasha_antardashas_sum_to_maha():
+    r = run(VEDIC, "dasha_yogini.py", REF + ["--levels", "2"])
+    md = r["mahadashas"][1]                 # first FULL mahadasha (Sankata, 8 yrs)
+    assert "antardashas" in md and len(md["antardashas"]) == 8
+    sub_total = sum(a["years"] for a in md["antardashas"])
+    assert abs(sub_total - md["years"]) < 1e-3
+
+
 def test_dasha_predict_rejects_pre_birth_date():
     proc = subprocess.run(
         [sys.executable, "dasha_predict.py", *REF, "--on", "1980-01-01", "--json"],
