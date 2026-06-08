@@ -219,12 +219,15 @@ def lagna_sensitivity(date: str, lat: float, lon: float, tz: str,
     while t <= hi_jd + 1e-9:
         asc = core.ascendant(t, lat, lon)
         sign = asc["sign"]
-        pada = (asc["nakshatra"], int((asc.get("degree_in_sign", 0)) // (30.0 / 9)))  # coarse
+        # Track the true (nakshatra, pada) pair from the ascendant longitude, so
+        # a change in EITHER the nakshatra or its pada is detected (pada matters
+        # for cusp-sensitive charts and for the D9/navamsa Lagna).
+        pada = (asc["nakshatra"], asc["pada"])
         local = core.jd_to_local(t, tz).strftime("%H:%M")
         if prev_sign is not None and sign != prev_sign:
             sign_changes.append({"at": local, "from": prev_sign, "to": sign})
-        if prev_pada is not None and pada[0] != prev_pada[0]:
-            pada_changes.append({"at": local, "to": pada[0]})
+        if prev_pada is not None and pada != prev_pada:
+            pada_changes.append({"at": local, "to": f"{pada[0]} pada {pada[1]}"})
         prev_sign, prev_pada = sign, pada
         t += step_days
     return {"lagna_sign_changes": sign_changes, "lagna_nakshatra_changes": pada_changes}

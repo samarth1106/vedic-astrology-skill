@@ -378,6 +378,15 @@ def main():
         print("NOTE: fpdf2 not installed (pip install fpdf2) — writing HTML instead.", file=sys.stderr)
         fmt = "html"
 
+    # Warn if an explicit --format contradicts the --out extension, so we don't
+    # silently write (e.g.) HTML bytes into a .pdf file without telling the user.
+    if args.out:
+        ext = os.path.splitext(args.out)[1].lower()
+        if (fmt == "html" and ext == ".pdf") or (fmt == "pdf" and ext in (".html", ".htm")):
+            print(f"NOTE: writing {fmt.upper()} content into '{args.out}' "
+                  f"(its extension suggests otherwise — set --format auto to honor the extension).",
+                  file=sys.stderr)
+
     safe_name = "".join(c for c in args.name if c.isalnum() or c in "-_") or "seeker"
     out = args.out or f"./{safe_name}_kundli_{args.date}.{fmt}"
 

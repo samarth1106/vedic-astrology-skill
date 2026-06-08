@@ -378,6 +378,40 @@ def test_numerology_number_check():
     assert chk["vs_moolank"] in {"friend", "neutral", "enemy"}
 
 
+def test_drik_bala_special_aspect_counted_by_whole_sign():
+    # Regression: special graha-drishti must be counted by WHOLE SIGN, not by
+    # 30-degree blocks of the raw separation. Saturn at Sagittarius 29 deg casts
+    # its 10th-sign aspect onto a target in Virgo (whole-sign distance 10), which
+    # a degree-block count would mis-read as the 9th and miss.
+    sys.path.insert(0, VEDIC)
+    import strength
+    planets = {nm: {"longitude": 155.0, "sign_num": 6} for nm in strength.SHADBALA_PLANETS}
+    planets["Saturn"] = {"longitude": 269.0, "sign_num": 9}  # Sag 29 deg, 10th by sign
+    # Only Saturn aspects (full 60, malefic) -> -60/4 = -15.0; conjunct fillers add 0.
+    assert strength.drik_bala("Sun", planets, True) == -15.0
+
+
+def test_geocode_resolves_gurgaon_and_gurugram():
+    for q in ("Gurgaon", "Gurugram"):
+        proc = subprocess.run(
+            [sys.executable, "geocode.py", q, "--json"],
+            cwd=VEDIC, capture_output=True, text=True)
+        assert proc.returncode == 0, proc.stderr
+        matches = json.loads(proc.stdout)
+        matches = matches if isinstance(matches, list) else matches.get("matches", [])
+        assert matches and matches[0]["name"] == "Gurugram"
+        assert matches[0]["timezone"] == "Asia/Kolkata"
+        assert abs(matches[0]["lat"] - 28.46) < 0.1 and abs(matches[0]["lon"] - 77.03) < 0.1
+
+
+def test_numerology_check_number_all_zero_is_safe():
+    # Regression: an all-zero number string reduces to 0, which has no 1-9
+    # vibration and must be omitted (not crash on RULING_PLANET[0]).
+    r = run(NUMER, "numerology.py",
+            ["--date", "1990-08-15", "--check-number", "0000", "--check-kind", "mobile"])
+    assert "number_check" not in r
+
+
 def test_yantra_birthday_is_magic():
     r = run(NUMER, "yantra.py", ["--date", "1990-08-15"])
     assert r["kind"] == "birthday"
