@@ -539,7 +539,7 @@ def compute_number_check(value: str, core: dict, kind: str = "number") -> dict:
     """Score an arbitrary number string (mobile/house/vehicle/account) against
     the person's core numbers. Returns compound, single, and friendliness."""
     digits = [int(c) for c in value if c.isdigit()]
-    if not digits:
+    if not digits or sum(digits) == 0:   # all-zero strings have no 1-9 vibration
         return {}
     compound = sum(digits)
     single = reduce_to_single(compound, False)

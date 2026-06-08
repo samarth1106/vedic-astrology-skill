@@ -201,7 +201,7 @@ vedic-astrology-skill/         # git repo (push this)
 
 ```bash
 pip install pytest
-pytest -q          # 65 golden-value checks (SAV=337, BAV totals, dasha closure,
+pytest -q          # 68 golden-value checks (SAV=337, BAV totals, dasha closure,
                    # sign placements, Guna Milan bounds, weekday, geocoder…)
 ```
 

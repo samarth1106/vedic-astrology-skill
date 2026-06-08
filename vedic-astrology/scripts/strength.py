@@ -697,7 +697,10 @@ def drik_bala(planet: str, planets: dict, moon_waxing: bool) -> float:
             continue
         sep = (target_lon - planets[other]["longitude"]) % 360.0
         drishti = sphuta_drishti(sep)
-        house = int(sep // 30.0) + 1            # 1..12 distance other→planet
+        # Special aspects are counted by WHOLE SIGN, not by 30deg blocks of the
+        # raw separation (which only coincide when both planets share the same
+        # degree-in-sign). Distance from `other`'s sign to `planet`'s sign, 1..12.
+        house = ((planets[planet]["sign_num"] - planets[other]["sign_num"]) % 12) + 1
         if house in SPECIAL_ASPECT_HOUSES[other]:
             drishti = 60.0
         # Sign of the contribution by the aspecting planet's benefic nature.
