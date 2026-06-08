@@ -378,6 +378,51 @@ def test_numerology_number_check():
     assert chk["vs_moolank"] in {"friend", "neutral", "enemy"}
 
 
+def test_yantra_birthday_is_magic():
+    r = run(NUMER, "yantra.py", ["--date", "1990-08-15"])
+    assert r["kind"] == "birthday"
+    # Top row = day, month, century-part, year-part = 15, 8, 19, 90 -> sum 132.
+    assert r["square"][0] == [15, 8, 19, 90]
+    assert r["magic_sum"] == 132 and r["magic_valid"] is True
+
+
+def test_yantra_planetary_surya_is_lo_shu():
+    r = run(NUMER, "yantra.py", ["--planet", "surya"])
+    assert r["square"] == [[4, 9, 2], [3, 5, 7], [8, 1, 6]]
+    assert r["magic_sum"] == 15 and r["magic_valid"] is True
+    assert "Suryaya" in r["bija_mantra"]
+
+
+def test_yantra_all_planets_are_magic():
+    r = run(NUMER, "yantra.py", ["--planet", "all"])
+    ys = r["yantras"]
+    assert len(ys) == 9
+    assert all(y["magic_valid"] for y in ys)
+    assert [y["magic_sum"] for y in ys] == [15, 18, 21, 24, 27, 30, 33, 36, 39]
+
+
+def test_yantra_custom_target_3x3():
+    r = run(NUMER, "yantra.py", ["--target", "24"])
+    assert r["magic_sum"] == 24 and r["magic_valid"] is True
+    assert all(sum(row) == 24 for row in r["square"])
+
+
+def test_yantra_rejects_non_multiple_of_three():
+    proc = subprocess.run(
+        [sys.executable, "yantra.py", "--target", "25", "--json"],
+        cwd=NUMER, capture_output=True, text=True)
+    assert proc.returncode != 0
+
+
+def test_yantra_writes_svg(tmp_path):
+    out = tmp_path / "y.svg"
+    proc = subprocess.run(
+        [sys.executable, "yantra.py", "--planet", "shani", "--svg", str(out), "--json"],
+        cwd=NUMER, capture_output=True, text=True)
+    assert proc.returncode == 0
+    assert out.exists() and out.read_text().startswith("<svg")
+
+
 def test_muhurta_ranking():
     r = run(VEDIC, "muhurta.py",
             ["--event", "marriage", "--from", "2026-11-01", "--to", "2026-11-20",

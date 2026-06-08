@@ -1,6 +1,6 @@
 ---
 name: numerology
-description: Compute a numerology report offline from a birth date (and optional full name). Generates the Moolank (psychic/birth number), Bhagyank (destiny/life-path number), Naamank (name number in Chaldean and/or Pythagorean systems), the name trinity (Expression/Destiny, Soul Urge/Antaratma from vowels, Personality from consonants) and Maturity number, ruling planets, number compatibility via planetary friendships, the karmic layer (Karmic Debt 13/14/16/19 and Karmic Lessons from missing name values), the Lo Shu grid with strength/weakness arrows, Pinnacles and Challenges life-stage cycles, personal year/month/day and universal-year cycles, two-person (couple/relationship) compatibility, a lucky-number checker for mobile/house/vehicle/account numbers and business names, lucky attributes (gemstone/day/colors), and a name-correction hint. Pure Python standard library — no ephemeris, no network, no dependencies. Use when the user says numerology, ank jyotish, life path number, destiny number, moolank, bhagyank, naamank, name number, soul urge, expression number, personality number, maturity number, karmic debt, karmic lesson, lo shu grid, pinnacle, challenge, personal year, personal month, personal day, lucky number, lucky mobile number, lucky house number, name compatibility, numerology match, couple compatibility, business name numerology, numerology report, Chaldean, Pythagorean, or name correction.
+description: Compute a numerology report offline from a birth date (and optional full name). Generates the Moolank (psychic/birth number), Bhagyank (destiny/life-path number), Naamank (name number in Chaldean and/or Pythagorean systems), the name trinity (Expression/Destiny, Soul Urge/Antaratma from vowels, Personality from consonants) and Maturity number, ruling planets, number compatibility via planetary friendships, the karmic layer (Karmic Debt 13/14/16/19 and Karmic Lessons from missing name values), the Lo Shu grid with strength/weakness arrows, Pinnacles and Challenges life-stage cycles, personal year/month/day and universal-year cycles, two-person (couple/relationship) compatibility, a lucky-number checker for mobile/house/vehicle/account numbers and business names, lucky attributes (gemstone/day/colors), and a name-correction hint. Also generates yantras (magic-square diagrams) — a personalised 4×4 birth yantra, the nine Navagraha planetary yantras, and custom-number yantras — as text, JSON, and printable SVG images, with a plain-language guide on what a yantra is and how to use one. Pure Python standard library — no ephemeris, no network, no dependencies. Use when the user says numerology, ank jyotish, life path number, destiny number, moolank, bhagyank, naamank, name number, soul urge, expression number, personality number, maturity number, karmic debt, karmic lesson, lo shu grid, pinnacle, challenge, personal year, personal month, personal day, lucky number, lucky mobile number, lucky house number, name compatibility, numerology match, couple compatibility, business name numerology, numerology report, Chaldean, Pythagorean, name correction, yantra, magic square, birth yantra, planetary yantra, navagraha yantra, surya/chandra/mangal/budh/guru/shukra/shani/rahu/ketu yantra, how to use a yantra, or make me a yantra.
 license: AGPL-3.0
 ---
 
@@ -87,6 +87,48 @@ python3 numerology.py --date 1990-08-15 --name "Albert Einstein" --json
   score an arbitrary number against the core numbers.
 - `--check-name "Business Name"` — score a business/brand name against the core numbers.
 - `--json` — emit JSON instead of the formatted text report.
+
+## Yantras — `scripts/yantra.py`
+
+A second script generates **numeric yantras** (magic-square diagrams) as text,
+JSON, and **printable SVG images**. A magic square is a grid where every row,
+column, and diagonal sum to the same total. Three kinds:
+
+```bash
+cd scripts
+
+# Personalised 4×4 birth yantra from a date of birth (+ printable SVG)
+python3 yantra.py --date 1990-08-15 --svg birth_yantra.svg
+
+# A Navagraha planetary 3×3 yantra (surya/chandra/mangal/budh/guru/
+#   shukra/shani/rahu/ketu) — prints its bija mantra + best day
+python3 yantra.py --planet guru --svg guru_yantra.svg
+
+# All nine planetary yantras at once (SVG path used as a filename prefix)
+python3 yantra.py --planet all --svg navagraha
+
+# A custom 3×3 magic square for any total (must be a multiple of 3)
+python3 yantra.py --target 24 --svg lucky_yantra.svg
+
+# JSON for further processing
+python3 yantra.py --planet shani --json
+```
+
+- **Birth yantra (`--date`)** — 4×4; top row is day/month/century-part/year-part,
+  every line sums to their total. Occasional zero/negative cells (small birth
+  months) are mathematically fine — the square stays magic.
+- **Planetary yantra (`--planet`)** — 3×3; Surya = the classical Lo Shu (sum 15),
+  each later graha lifts the centre by one. Includes the traditional **bija
+  (seed) mantra** and best weekday.
+- **Custom yantra (`--target N`)** — 3×3 for any total `N` that is a multiple of 3.
+- `--svg PATH` writes a decorative SVG (gated bhupura + lotus-petal ring + grid).
+
+**Always offer the "how to use" guidance** — many people don't know what a yantra
+is for. Load `references/yantra.md` and explain: what a yantra is (a focusing
+diagram, not a prediction), which one fits the user's goal, and the simple daily
+practice (face east/north, set an intention, soft-gaze the centre — *trataka* —
+and repeat the mantra ~108×). Be honest that it is a contemplative/cultural aid
+that complements real action, never replaces medical/financial/legal help.
 
 ## What the report contains
 
