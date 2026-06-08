@@ -56,7 +56,8 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Avoid / don'ts** (`avoid.py`) | **What NOT to do** today or across a week — Rahu Kaal/Yamaganda/Gulika windows, Vishti (Bhadra), Rikta tithi & Amavasya, harsh yogas, tikshna nakshatras, **Panchak**, **Disha Shool** (direction not to travel), and — with birth — **Chandrashtama** & weak Tara/Chandra Bala, each mapped to concrete "refrain from…" actions |
 | **Lucky profile** (`lucky.py`) | Lucky **day, colour, number, direction, metal, gem & deity** from your Lagna lord, Moon lord, yogakaraka + Moolank |
 | **Answer Book** (`references/answer-book.md`) | Routes every seeker question (career, money, marriage, children, health, timing, legal…) to the right tool **and the chart factor behind the answer** |
-| **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), Lo Shu grid, compatibility, personal year, name-correction hints |
+| **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), name trinity (Expression / Soul Urge / Personality) + Maturity, Karmic Debt & Lessons, Lo Shu grid, Pinnacles & Challenges, personal year/month/day, two-person compatibility, lucky mobile/house/vehicle/business-name checker, name-correction hints |
+| **Yantra** (`numerology/yantra.py`) | **Magic-square yantras** as text, JSON & printable **SVG** — personalised 4×4 birth yantra, the nine Navagraha planetary yantras (with bija mantras), and custom-number squares, plus a plain-language *how to use a yantra* guide |
 
 Configurable **ayanamsa** (Lahiri / Raman / KP / Yukteshwar / Fagan-Bradley),
 **house system** (Whole Sign / Placidus / Equal), **node** (mean / true), and
@@ -190,14 +191,17 @@ vedic-astrology-skill/         # git repo (push this)
 └── numerology/                 # SKILL 2 — stdlib only, no ephemeris
     ├── SKILL.md
     ├── scripts/numerology.py
-    └── references/numbers.md
+    ├── scripts/yantra.py        # magic-square yantras (text / JSON / SVG)
+    └── references/
+        ├── numbers.md
+        └── yantra.md            # what a yantra is + how to use one
 ```
 
 ## ✅ Tests
 
 ```bash
 pip install pytest
-pytest -q          # 54 golden-value checks (SAV=337, BAV totals, dasha closure,
+pytest -q          # 65 golden-value checks (SAV=337, BAV totals, dasha closure,
                    # sign placements, Guna Milan bounds, weekday, geocoder…)
 ```
 
