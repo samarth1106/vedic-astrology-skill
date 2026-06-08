@@ -1,6 +1,6 @@
 ---
 name: vedic-astrology
-description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, yogini dasha, birth time rectification, rectify birth time, western sun sign, tropical sign, star sign, panchang, tithi, muhurta, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
+description: Astro Claude — a free, guided Vedic (Hindu/jyotish) astrology reader for the seeker. Asks the person's name, birth date/time, birthplace, gender, and marital status, then gives a warm plain-language reading with real depth (planets named in Hindi). Computes Vedic astrology charts and almanac data offline from birth details. Generates a Kundli birth chart (D1 Rashi — planets, signs, whole-sign houses, Lagna/ascendant, nakshatras and padas, retrogrades), the Vimshottari Dasha timeline (Mahadasha/Antardasha periods) plus a chart-aware interpretation of what the currently running dasha means across daily life, career, money, marriage, health, family, and enemies, the daily Panchang (tithi, nakshatra, yoga, karana, vara), and detects classical yogas (Gajakesari, Budhaditya, Raja, Pancha Mahapurusha). Uses the Swiss Ephemeris in sidereal mode with a configurable ayanamsa (Lahiri default). Use when the user says vedic astrology, jyotish, kundli, janam kundali, birth chart, horoscope, rashi, nakshatra, dasha, mahadasha, vimshottari, yogini dasha, birth time rectification, rectify birth time, western sun sign, tropical sign, star sign, panchang, tithi, muhurta, what not to do today, what to avoid today or this week, what should I refrain from, things to avoid, is today a bad day, inauspicious time, Rahu Kaal, Panchak, Bhadra, Disha Shool, which direction not to travel, Chandrashtama, lagna, ascendant, ayanamsa, divisional chart, varga, navamsa, dasamsha D9/D10, transit, gochar, Sade Sati, dhaiya, house/bhava analysis, remedy, upaya, gemstone, mantra, asks what their current dasha/mahadasha means or how a period will affect their life/career/money/marriage/health, asks to draw/visualise a kundli, says "Astro Claude", asks for a personal/life reading, which gemstone to wear or avoid, whether they can wear a rudraksha, a good time to join a job, asks how the stars/planets are aligned today, asks for today's sky / current planetary positions / what's in the sky now, or asks to cast/read a Hindu astrology chart.
 license: AGPL-3.0
 ---
 
@@ -102,6 +102,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Draw / visualise the chart / North or South Indian kundli diagram | `chart.py` |
 | Lucky day / colour / number / direction / metal / which-colour-car | `lucky.py` |
 | Best date/time for an event / muhurta / shubh muhurat / when to marry-buy-launch-travel-sign | `muhurta.py` |
+| **What NOT to do / what to avoid / refrain from today or this week / don'ts / inauspicious time / bad day / Panchak / Bhadra / Disha Shool / which direction not to travel / Chandrashtama / Rahu Kaal to avoid** | **`avoid.py`** |
 | Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
 | Birth-time rectification / "is my birth time right" / find/verify birth time from life events | `rectify.py` |
 | Look up a city's coordinates + timezone | `geocode.py` |
@@ -133,6 +134,12 @@ python3 astro_claude.py --name "Asha" --gender female --married no \
 # Muhurta — rank the best days for an event over a date range (optional birth = Tara/Chandra Bala)
 python3 muhurta.py --event marriage --from 2026-11-01 --to 2026-12-15 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --top 7 \
+  --birth-date 1990-08-15 --birth-time 14:30:00 --birth-lat 28.61 --birth-lon 77.21 --birth-tz Asia/Kolkata
+
+# What to AVOID — the don'ts for today (--days 7 = a whole week). Birth = personalised
+# (Chandrashtama, weak Tara/Chandra Bala). Mirror of muhurta: timing cautions, not predictions.
+python3 avoid.py --date 2026-06-08 --days 7 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata \
   --birth-date 1990-08-15 --birth-time 14:30:00 --birth-lat 28.61 --birth-lon 77.21 --birth-tz Asia/Kolkata
 
 # Shareable PDF report (falls back to HTML if fpdf2 isn't installed)
@@ -258,6 +265,15 @@ Always prefer a birth record where one exists.
 5. **Pair dasha with transits.** For timing questions ("is this a good year",
    "what's happening now"), run `dasha_predict.py` (the backdrop) AND `gochar.py`
    (the trigger), and read them together. `gochar.py` also answers Sade Sati.
+5b. **"What should I avoid / not do?" → `avoid.py`** — it is the don'ts mirror of
+   `muhurta.py`. Use it for any "what to refrain from today/this week", "is today a
+   bad day", "which direction shouldn't I travel", "when is Rahu Kaal", Panchak,
+   Bhadra, or Chandrashtama question. Pass `--days 7` for a week and the birth
+   details to personalise (Chandrashtama, weak Tara/Chandra Bala). **Frame its
+   output as traditional timing cautions, never as fate or a ban** — close with the
+   reassurance that ordinary work is unaffected and a deadline/doctor always wins.
+   In any **personal weekly reading, fold in a short "what to avoid" section** from
+   `avoid.py` so the seeker hears the don'ts beside the do's.
 6. **Confirm life-area questions in the right varga.** Career → D10, marriage →
    D9, children → D7, wealth → D2 via `varga.py`; don't judge them from D1 alone.
 7. **`remedies.py` output is TRADITIONAL/CULTURAL ONLY.** Always present it with

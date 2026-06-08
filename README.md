@@ -53,6 +53,7 @@ in **sidereal (Vedic) mode**, using the **Lahiri ayanamsa** by default.
 | **Matching** (`matching.py`) | **Guna Milan** (36-point Ashtakoot), **Manglik** (Mangal Dosha), **Kaal Sarpa Dosha** |
 | **Geocoder** (`geocode.py`) | Offline city → latitude / longitude / IANA timezone (bundled GeoNames dataset) |
 | **Muhurta** (`muhurta.py`) | **Electional timing** — ranks the best days in a range for marriage, business, vehicle, house, travel, contracts, surgery… by vara/tithi/nakshatra/yoga/karana (+ Tara & Chandra Bala with birth), Abhijit window, Rahu-Kaal avoid |
+| **Avoid / don'ts** (`avoid.py`) | **What NOT to do** today or across a week — Rahu Kaal/Yamaganda/Gulika windows, Vishti (Bhadra), Rikta tithi & Amavasya, harsh yogas, tikshna nakshatras, **Panchak**, **Disha Shool** (direction not to travel), and — with birth — **Chandrashtama** & weak Tara/Chandra Bala, each mapped to concrete "refrain from…" actions |
 | **Lucky profile** (`lucky.py`) | Lucky **day, colour, number, direction, metal, gem & deity** from your Lagna lord, Moon lord, yogakaraka + Moolank |
 | **Answer Book** (`references/answer-book.md`) | Routes every seeker question (career, money, marriage, children, health, timing, legal…) to the right tool **and the chart factor behind the answer** |
 | **Numerology** (`numerology/`) | Moolank, Bhagyank, Naamank (Chaldean + Pythagorean), Lo Shu grid, compatibility, personal year, name-correction hints |
@@ -102,6 +103,7 @@ python3 remedies.py --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.209
 python3 chart.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --style both --varga D1
 python3 rectify.py  --date 1990-08-15 --approx-time 14:30 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --window 90 --step 3 --event 2015-06-20:marriage --event 2018-03-10:child
 python3 panchang.py --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+python3 avoid.py    --date 2026-06-08 --days 7         --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --birth-date 1990-08-15 --birth-time 14:30:00
 python3 sky.py      --date 2026-06-04                  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 python3 yogas.py    --date 1990-08-15 --time 14:30:00 --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
 
@@ -172,7 +174,7 @@ vedic-astrology-skill/         # git repo (push this)
 │   │   ├── astro_claude.py     # Astro Claude — the guided seeker's reading
 │   │   ├── full_report.py      # shareable PDF/HTML report
 │   │   ├── kundli.py  dasha.py  dasha_yogini.py  dasha_predict.py  panchang.py  yogas.py
-│   │   ├── lucky.py  mantra.py  muhurta.py
+│   │   ├── lucky.py  mantra.py  muhurta.py  avoid.py
 │   │   ├── sky.py              # Today's Sky — panchang + planetary alignment (opening view)
 │   │   ├── strength.py         # Ashtakavarga + Shadbala
 │   │   ├── varga.py            # 16 Shodasavarga + 4 extra divisions + cross-varga strength
@@ -195,7 +197,7 @@ vedic-astrology-skill/         # git repo (push this)
 
 ```bash
 pip install pytest
-pytest -q          # 37 golden-value checks (SAV=337, BAV totals, dasha closure,
+pytest -q          # 54 golden-value checks (SAV=337, BAV totals, dasha closure,
                    # sign placements, Guna Milan bounds, weekday, geocoder…)
 ```
 

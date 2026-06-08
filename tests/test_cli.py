@@ -370,6 +370,70 @@ def test_muhurta_rejects_backwards_range():
     assert proc.returncode != 0
 
 
+# --------------------------------------------------------------------------- #
+# Avoid — the don'ts engine: structure, Panchak, Disha Shool, and the personal
+# Chandrashtama flag. Mirror of muhurta (timing cautions, not predictions).
+# --------------------------------------------------------------------------- #
+def test_avoid_structure_and_windows():
+    r = run(VEDIC, "avoid.py",
+            ["--date", "2026-06-08", "--days", "7",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata"])
+    assert r["days"] == 7 and len(r["report"]) == 7
+    for d in r["report"]:
+        # Every day carries the three inauspicious time windows and a refrain map.
+        for w in ("rahu_kaal", "yamaganda", "gulika"):
+            assert d["windows"][w]
+        assert isinstance(d["refrain"], dict)
+        assert d["worst_severity"] in ("high", "med", "low", None)
+
+
+def test_avoid_disha_shool_matches_weekday():
+    # 2026-06-08 is a Monday → Disha Shool is East (classical mapping).
+    r = run(VEDIC, "avoid.py",
+            ["--date", "2026-06-08", "--lat", "28.6139", "--lon", "77.2090",
+             "--tz", "Asia/Kolkata"])
+    day = r["report"][0]
+    assert day["weekday"] == "Monday"
+    assert day["disha_shool"] == "East"
+
+
+def test_avoid_panchak_fires_for_moon_in_aquarius():
+    # 2026-06-08 the Moon is in Aquarius → Panchak; the five prohibitions appear.
+    r = run(VEDIC, "avoid.py",
+            ["--date", "2026-06-08", "--lat", "28.6139", "--lon", "77.2090",
+             "--tz", "Asia/Kolkata"])
+    day = r["report"][0]
+    assert day["moon_sign"] == "Aquarius"
+    titles = {f["title"] for f in day["flags"]}
+    assert any(t.startswith("Panchak") for t in titles)
+    # A Panchak-specific don't (south-bound travel) must be in the refrain list.
+    assert any("south-bound" in act for act in day["refrain"])
+
+
+def test_avoid_personalised_chandrashtama():
+    # REF Moon is Taurus; the 8th sign is Sagittarius. On 2026-06-02 the transit
+    # Moon is in Sagittarius → Chandrashtama, a personal high-caution day.
+    r = run(VEDIC, "avoid.py",
+            ["--date", "2026-06-02",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata",
+             "--birth-date", "1990-08-15", "--birth-time", "14:30:00"])
+    assert r["personalised"] is True
+    day = r["report"][0]
+    assert day["chandra_pos"] == 8
+    assert day["worst_severity"] == "high"
+    assert any(f["title"].startswith("Chandrashtama") for f in day["flags"])
+    # Personalised days expose both Tara and Chandra-Bala context.
+    assert "tara" in day
+
+
+def test_avoid_rejects_bad_days_range():
+    proc = subprocess.run(
+        [sys.executable, "avoid.py", "--date", "2026-06-08", "--days", "0",
+         "--lat", "28.6", "--lon", "77.2", "--tz", "Asia/Kolkata", "--json"],
+        cwd=VEDIC, capture_output=True, text=True)
+    assert proc.returncode != 0
+
+
 def test_mantra_goals():
     r = run(VEDIC, "mantra.py", REF + ["--goal", "all", "--on", "2026-06-04"])
     assert r["mahadasha_lord"] in {"Sun", "Moon", "Mars", "Mercury", "Jupiter",
