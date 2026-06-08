@@ -126,10 +126,78 @@ A **line fully present** across the person's digits is an *Arrow of Strength*; a
 | Diagonal | 4,5,6 | Arrow of Compassion (the Golden / Kindness) |
 | Diagonal | 2,5,8 | Arrow of Spirituality / Emotional |
 
-## Personal year
+## Name trinity & Maturity
 
-`personal_year = reduce( birth_month + birth_day + reduce(year) )`, giving a 1–9
-theme (see the number profiles above for the corresponding keywords).
+From the full name, three numbers are derived (the *system* — Chaldean or
+Pythagorean — is the first one requested):
+
+- **Expression / Destiny** — sum of **all** letters. Natural talents and the
+  direction life pulls you toward.
+- **Soul Urge / Antaratma** — sum of the **vowels** only. Inner cravings, what the
+  heart truly wants.
+- **Personality** — sum of the **consonants** only. The first impression others form.
+
+**Y** is treated as a vowel only when it has **no adjacent vowel** within its word
+(e.g. the Y in *Lynn* is a vowel; the Y in *Maya* is a consonant). **W** is always
+a consonant here. This is the common numerology heuristic — other schools vary, so
+treat the vowel/consonant split as one defensible convention, not the only one.
+
+- **Maturity / Realisation number** = `reduce( Bhagyank + Expression )`. The
+  underlying goal the personality matures toward, usually felt from the 30s–40s on.
+
+## Karmic Debt numbers (13, 14, 16, 19)
+
+When a **pre-reduction compound** of a core number (birthday, life path,
+expression, soul urge, or personality) lands on 13, 14, 16, or 19, tradition reads
+it as a *Karmic Debt* — an inherited lesson to clear in this life:
+
+- **13/4** — laziness/shortcuts in a past cycle; lesson is disciplined, honest effort.
+- **14/5** — abused freedom/excess; lesson is moderation and focus.
+- **16/7** — ego and illicit love; lesson is humility and spiritual rebuilding.
+- **19/1** — misused power and selfishness; lesson is independence *with* care for others.
+
+## Karmic Lessons (missing name values)
+
+Map the name with **Pythagorean** values (1–9). Any value **entirely absent** from
+the name is a *Karmic Lesson* — a quality to consciously develop. (See the 1–9
+profiles above for the theme of each missing number.)
+
+## Pinnacles & Challenges
+
+Four **Pinnacles** (peak themes) and four **Challenges** (lessons) span life in
+stages, built from the reduced month (m), day (d) and year (y):
+
+- Pinnacle 1 = `reduce(m + d)`, Pinnacle 2 = `reduce(d + y)`,
+  Pinnacle 3 = `reduce(P1 + P2)`, Pinnacle 4 = `reduce(m + y)`.
+- Challenge 1 = `|m − d|`, Challenge 2 = `|d − y|`,
+  Challenge 3 = `|C1 − C2|`, Challenge 4 = `|m − y|` (a Challenge of **0** means a
+  free, self-defined lesson with no single planetary flavour).
+- **Ages:** the first pinnacle runs from birth to `36 − Bhagyank`, then each
+  subsequent pinnacle/challenge covers the next nine years; the fourth runs to the end.
+
+## Personal year, month & day
+
+- **Universal year** = `reduce(all digits of the calendar year)`.
+- **Personal year** = `reduce( birth_month + birth_day + universal_year )`, a 1–9
+  theme (see the number profiles above for the corresponding keywords).
+- **Personal month** = `reduce( personal_year + calendar_month )`.
+- **Personal day** = `reduce( personal_month + calendar_day )`.
+
+## Two-person compatibility
+
+Each relationship pair (Moolank↔Moolank, Bhagyank↔Bhagyank, the cross pairs, and
+optionally Naamank↔Naamank) is scored by the planetary-friendship relation —
+**friend = 2, neutral = 1, enemy = 0** — and totalled as a percentage of the
+maximum. Higher is more naturally harmonious; a low score means the bond can still
+work but takes conscious effort.
+
+## Lucky-number & business-name checks
+
+Any number (mobile, house, vehicle plate, account) is reduced to its compound and
+single digit; the single digit's friendship relation to the **Moolank** and
+**Bhagyank** decides whether it is favourable, neutral, or to be avoided. A
+business/brand name is scored the same way via its Naamank. This is the practical
+Ank Jyotish side — choose numbers/names friendly to *both* core numbers.
 
 ## Master numbers 11, 22, 33
 

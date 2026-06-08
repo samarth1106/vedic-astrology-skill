@@ -1,6 +1,6 @@
 ---
 name: numerology
-description: Compute a numerology report offline from a birth date (and optional full name). Generates the Moolank (psychic/birth number), Bhagyank (destiny/life-path number), Naamank (name number in Chaldean and/or Pythagorean systems), ruling planets, number compatibility via planetary friendships, the Lo Shu grid with strength/weakness arrows, an optional personal-year theme, lucky attributes (gemstone/day/colors), and a name-correction hint. Pure Python standard library — no ephemeris, no network, no dependencies. Use when the user says numerology, ank jyotish, life path number, destiny number, moolank, bhagyank, naamank, name number, lo shu grid, lucky number, numerology report, personal year, Chaldean, Pythagorean, or name correction.
+description: Compute a numerology report offline from a birth date (and optional full name). Generates the Moolank (psychic/birth number), Bhagyank (destiny/life-path number), Naamank (name number in Chaldean and/or Pythagorean systems), the name trinity (Expression/Destiny, Soul Urge/Antaratma from vowels, Personality from consonants) and Maturity number, ruling planets, number compatibility via planetary friendships, the karmic layer (Karmic Debt 13/14/16/19 and Karmic Lessons from missing name values), the Lo Shu grid with strength/weakness arrows, Pinnacles and Challenges life-stage cycles, personal year/month/day and universal-year cycles, two-person (couple/relationship) compatibility, a lucky-number checker for mobile/house/vehicle/account numbers and business names, lucky attributes (gemstone/day/colors), and a name-correction hint. Pure Python standard library — no ephemeris, no network, no dependencies. Use when the user says numerology, ank jyotish, life path number, destiny number, moolank, bhagyank, naamank, name number, soul urge, expression number, personality number, maturity number, karmic debt, karmic lesson, lo shu grid, pinnacle, challenge, personal year, personal month, personal day, lucky number, lucky mobile number, lucky house number, name compatibility, numerology match, couple compatibility, business name numerology, numerology report, Chaldean, Pythagorean, or name correction.
 license: AGPL-3.0
 ---
 
@@ -19,9 +19,13 @@ the repository's **AGPL-3.0** license.
 
 | Input | Format | Required | Notes |
 |-------|--------|----------|-------|
-| Date  | `YYYY-MM-DD` | **Yes** | Date of birth. Drives Moolank, Bhagyank, Lo Shu. |
-| Name  | `"Full Name"` | No | Enables Naamank, compatibility, name-correction. |
+| Date  | `YYYY-MM-DD` | **Yes** | Date of birth. Drives Moolank, Bhagyank, Lo Shu, Pinnacles. |
+| Name  | `"Full Name"` | No | Enables Naamank, name trinity, Maturity, compatibility, Karmic Lessons, name-correction. |
 | Year  | `YYYY` | No | Enables the personal-year theme. |
+| `--on`  | `YYYY-MM-DD` | No | Personal year/month/day + universal-year cycles for that date. |
+| `--date2` | `YYYY-MM-DD` | No | Second person's DOB — adds two-person (couple) compatibility. `--name2` optional. |
+| `--check-number` | digit string | No | Score a mobile/house/vehicle/account number vs the core numbers (`--check-kind`). |
+| `--check-name` | `"Business Name"` | No | Score a business/brand name vs the core numbers. |
 
 Only the date is required. Everything else degrades gracefully when omitted.
 
@@ -52,6 +56,18 @@ python3 numerology.py --date 1990-08-15
 # Chaldean only, keep master numbers 11/22/33 unreduced where noted
 python3 numerology.py --date 2000-02-29 --system chaldean --keep-master
 
+# Personal cycles for a specific date (universal/personal year, month, day)
+python3 numerology.py --date 1990-08-15 --on 2026-06-08
+
+# Two-person (couple) compatibility
+python3 numerology.py --date 1990-08-15 --name "Person A" \
+  --date2 1991-06-09 --name2 "Person B"
+
+# Lucky-number checks (mobile / house / vehicle / account, and a business name)
+python3 numerology.py --date 1990-08-15 \
+  --check-number "9876543210" --check-kind mobile \
+  --check-name "Acme Labs"
+
 # JSON output for further processing
 python3 numerology.py --date 1990-08-15 --name "Albert Einstein" --json
 ```
@@ -65,6 +81,11 @@ python3 numerology.py --date 1990-08-15 --name "Albert Einstein" --json
 - `--keep-master` — keep 11/22/33 unreduced in Moolank/Bhagyank/Naamank where the
   reduction would otherwise pass through a master number. Ruling-planet lookups
   still use the fully reduced single digit.
+- `--on YYYY-MM-DD` — add personal year/month/day + universal-year cycles for that date.
+- `--date2 YYYY-MM-DD` / `--name2` — add two-person (couple) compatibility.
+- `--check-number "digits"` / `--check-kind number|mobile|house|vehicle|account` —
+  score an arbitrary number against the core numbers.
+- `--check-name "Business Name"` — score a business/brand name against the core numbers.
 - `--json` — emit JSON instead of the formatted text report.
 
 ## What the report contains
@@ -72,16 +93,30 @@ python3 numerology.py --date 1990-08-15 --name "Albert Einstein" --json
 1. **Moolank** (psychic / birth number) — reduced day of birth, with ruling planet.
 2. **Bhagyank** (destiny / life-path) — reduced sum of all DOB digits, shows the chain.
 3. **Naamank** (name number) — compound + reduced, per requested system.
-4. **Ruling planet** — Sun/Moon/Jupiter/Rahu/Mercury/Venus/Ketu/Saturn/Mars for 1–9.
-5. **Compatibility** — whether the Naamank is friend/neutral/enemy to the Moolank
+4. **Name trinity** (with a name) — **Expression / Destiny** (all letters, natural
+   talents), **Soul Urge / Antaratma** (vowels, inner cravings), **Personality**
+   (consonants, outer impression), plus the **Maturity** number (Life Path + Expression).
+   Y counts as a vowel only when it has no adjacent vowel in its word.
+5. **Ruling planet** — Sun/Moon/Jupiter/Rahu/Mercury/Venus/Ketu/Saturn/Mars for 1–9.
+6. **Compatibility** — whether the Naamank is friend/neutral/enemy to the Moolank
    and Bhagyank, using planetary friendships, with a recommendation.
-6. **Lo Shu grid** — digit placement, counts, missing numbers, and detected
+7. **Karmic layer** — **Karmic Debt** numbers (13/14/16/19 appearing as a core
+   compound) and **Karmic Lessons** (the 1–9 values entirely absent from the name).
+8. **Lo Shu grid** — digit placement, counts, missing numbers, and detected
    arrows of strength (line fully present) and weakness (line fully absent).
-7. **Personal year** (only with `--year`) — the 1–9 theme for that year.
-8. **Lucky attributes** — gemstone, days, and colors for the Moolank's ruler.
-9. **Name-correction hint** — if the name conflicts with a core number, the target
-   single-digit Naamank values that are friends of *both* core numbers (principle
-   only — the skill does not auto-generate spellings).
+9. **Pinnacles & Challenges** — four life-stage peak themes and four challenge
+   lessons, each with the age range it governs (derived from the reduced DOB).
+10. **Personal year** (only with `--year`) — the 1–9 theme for that year.
+11. **Personal cycles** (only with `--on`) — universal year, personal year/month/day.
+12. **Lucky attributes** — gemstone, days, and colors for the Moolank's ruler.
+13. **Name-correction hint** — if the name conflicts with a core number, the target
+    single-digit Naamank values that are friends of *both* core numbers (principle
+    only — the skill does not auto-generate spellings).
+14. **Number check** (only with `--check-number`) — a mobile/house/vehicle/account
+    number's compound + reduced value and whether it is friendly to the core numbers.
+15. **Business/name check** (only with `--check-name`) — a brand name's number vs the core.
+16. **Two-person compatibility** (only with `--date2`) — friend/neutral/enemy across
+    both people's core (and optional name) numbers, with a 0–100% score and verdict.
 
 ## Presenting results
 

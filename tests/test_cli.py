@@ -330,6 +330,54 @@ def test_numerology_rejects_impossible_date():
     assert proc.returncode != 0
 
 
+def test_numerology_name_trinity_and_maturity():
+    r = run(NUMER, "numerology.py", ["--date", "1990-08-15", "--name", "Albert Einstein",
+                                      "--system", "chaldean"])
+    tr = r["name_trinity"]
+    # Expression = full-name compound; vowels AEEIEI sum to 18 -> Soul Urge 9.
+    assert tr["expression"]["compound"] == 46 and tr["expression"]["number"] == 1
+    assert tr["soul_urge"]["number"] == 9
+    assert tr["personality"]["number"] == 1
+    # Maturity = reduce(Bhagyank 6 + Expression 1) = 7.
+    assert r["maturity"]["number"] == 7
+
+
+def test_numerology_karmic_debt_and_lessons():
+    # Day 13 -> Karmic Debt 13/4 in the birthday.
+    r = run(NUMER, "numerology.py", ["--date", "1980-04-13", "--name", "Albert Einstein"])
+    assert r["karmic"]["debts"]["birthday"]["number"] == 13
+    # "Albert Einstein" (Pythagorean) is missing values 4, 6, 7, 8.
+    assert r["karmic"]["lessons"] == [4, 6, 7, 8]
+
+
+def test_numerology_pinnacles_and_personal_cycles():
+    r = run(NUMER, "numerology.py", ["--date", "1990-08-15", "--on", "2026-06-08"])
+    pin = r["pinnacles_challenges"]["pinnacles"]
+    assert len(pin) == 4 and all(1 <= p["number"] <= 9 for p in pin)
+    # First pinnacle = reduce(reduce(8)+reduce(15)) = reduce(8+6) = 5.
+    assert pin[0]["number"] == 5
+    cy = r["personal_cycles"]
+    assert cy["universal_year"] == 1            # 2+0+2+6 = 10 -> 1
+    assert 1 <= cy["personal_day"]["number"] <= 9
+
+
+def test_numerology_two_person_match():
+    r = run(NUMER, "numerology.py", ["--date", "1990-08-15", "--date2", "1991-06-09"])
+    m = r["match"]
+    assert m["person_a"]["moolank"] == 6 and m["person_b"]["moolank"] == 9
+    assert 0 <= m["score_pct"] <= 100
+    assert len(m["pairs"]) == 4            # no names -> 4 core pairs only
+
+
+def test_numerology_number_check():
+    r = run(NUMER, "numerology.py", ["--date", "1990-08-15",
+                                     "--check-number", "9876543210", "--check-kind", "mobile"])
+    chk = r["number_check"]
+    assert chk["kind"] == "mobile"
+    assert chk["compound"] == 45 and chk["number"] == 9
+    assert chk["vs_moolank"] in {"friend", "neutral", "enemy"}
+
+
 def test_muhurta_ranking():
     r = run(VEDIC, "muhurta.py",
             ["--event", "marriage", "--from", "2026-11-01", "--to", "2026-11-20",
