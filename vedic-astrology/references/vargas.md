@@ -72,6 +72,34 @@ place to change it.
 - The **own/exalted and debilitated counts** are exact and unambiguous; lead with
   those when judging a planet's varga strength.
 
+## Shareable atlas — `varga_report.py`
+
+For a downloadable **atlas** of the divisional charts, use `varga_report.py`
+(distinct from `full_report.py`, which renders only the D1 narrative). It draws
+every requested varga as a South-Indian grid and, unless `--no-readings`, pairs
+each with a five-part explainer: what the chart shows, how the amsa is built, a
+technical read (divisional Lagna + its lord's dignity, who sits with the Lagna,
+exalted/own/debilitated planets), the area significator (karaka) plus a
+transparent three-factor verdict (STRONG / MODERATE / MIXED / TENDER), and a
+plain-language takeaway. `--charts all+` = all 20; PDF needs `fpdf2`, else it
+falls back to HTML. The verdict is a reproducible rule-of-thumb (Lagna-lord
+dignity + karaka dignity + dignified-vs-debilitated count), **not** a classical
+Vimshopaka or a final judgment — a real reading also weighs aspects and yogas.
+
+## Reproducing a chart from other software (geocentric vs topocentric)
+
+When verifying this skill's output against an externally-supplied chart (e.g. a
+JSON or PDF from common Indian software), expect **every planet to match except
+possibly the Moon**. Most Indian software computes **geocentric** positions,
+while this skill defaults to **topocentric** (corrected for the observer's place
+on Earth's surface). Topocentric correction is negligible for all grahas except
+the Moon, where lunar parallax can shift the longitude by **up to ~1°**. If only
+the Moon disagrees by tens of arc-minutes, re-run with `--geocentric` to match —
+do **not** assume a data error. Because the Moon's nakshatra/pada usually survive
+the shift, the Vimshottari dasha is normally unaffected (the exception is a Moon
+sitting on a nakshatra boundary). Also note some sources encode degrees as
+`DD°MM` (e.g. `14.57` = 14°57′), not decimal degrees.
+
 ## Engine
 
 All amsa mappings live in `core.varga_sign(lon, D)`. The 16 Shodasavarga follow
