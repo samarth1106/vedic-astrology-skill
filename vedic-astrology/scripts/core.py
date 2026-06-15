@@ -476,6 +476,13 @@ def ascendant(jd: float, lat: float, lon: float, house_system: str = DEFAULT_HOU
         raise ValueError(
             f"Unknown house system '{house_system}'. Choose from: {', '.join(HOUSE_SYSTEMS)}"
         )
+    # Placidus (and other quadrant systems) are undefined inside the polar circles:
+    # some houses never rise. Fail loudly rather than return a degenerate chart.
+    if house_system == "placidus" and abs(lat) > 66.0:
+        raise ValueError(
+            f"Placidus houses are undefined above latitude 66 deg (got {lat:.2f}). "
+            f"Use --house-system whole_sign (the Vedic default, latitude-independent) or equal."
+        )
     _, ascmc = swe.houses_ex(jd, lat, lon, HOUSE_SYSTEMS[house_system], swe.FLG_SIDEREAL)
     asc_lon = ascmc[0] % 360.0
     return _describe_point(asc_lon)
@@ -484,6 +491,47 @@ def ascendant(jd: float, lat: float, lon: float, house_system: str = DEFAULT_HOU
 def house_of(planet_sign_num: int, asc_sign_num: int) -> int:
     """Whole-sign house number (1..12) of a planet given the ascendant sign."""
     return ((planet_sign_num - asc_sign_num) % 12) + 1
+
+
+def house_cusps(jd: float, lat: float, lon: float,
+                house_system: str = "placidus") -> list:
+    """Return the 12 sidereal house-cusp longitudes (degrees, 1st..12th).
+
+    Used for cusp-based (Bhava Chalit) house assignment, where a planet belongs
+    to the bhava whose cusp span contains it — not merely its whole-sign house.
+    Defaults to Placidus cusps (the basis of the common Sripati/KP chalit chart).
+    """
+    if house_system not in HOUSE_SYSTEMS:
+        raise ValueError(
+            f"Unknown house system '{house_system}'. Choose from: {', '.join(HOUSE_SYSTEMS)}"
+        )
+    if house_system == "placidus" and abs(lat) > 66.0:
+        raise ValueError(
+            f"Placidus cusps are undefined above latitude 66 deg (got {lat:.2f}). Use whole_sign or equal."
+        )
+    cusps, _ = swe.houses_ex(jd, lat, lon, HOUSE_SYSTEMS[house_system], swe.FLG_SIDEREAL)
+    # pyswisseph returns the 12 cusps either as a 13-tuple (index 0 unused, 1..12)
+    # or a 12-tuple (0..11), depending on version. Normalise to a 0-based list of 12.
+    base = 1 if len(cusps) >= 13 else 0
+    return [cusps[base + i] % 360.0 for i in range(12)]
+
+
+def bhava_of(longitude: float, cusps: list) -> int:
+    """Which bhava (1..12) a sidereal longitude falls in, given 12 house cusps.
+
+    A planet is in bhava i if it lies on the arc from cusp[i] up to cusp[i+1]
+    (wrapping past 360 deg). This cusp-based assignment can differ from the
+    whole-sign house for a planet near a sign edge.
+    """
+    lon = longitude % 360.0
+    for i in range(12):
+        start = cusps[i]
+        end = cusps[(i + 1) % 12]
+        span = (end - start) % 360.0
+        offset = (lon - start) % 360.0
+        if offset < span:
+            return i + 1
+    return 12  # numerical fallback; should not be reached
 
 
 # --------------------------------------------------------------------------- #
