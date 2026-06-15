@@ -18,8 +18,6 @@ import json
 
 import core
 
-WEEKDAY_LORD = {0: "Moon", 1: "Mars", 2: "Mercury", 3: "Jupiter",
-                4: "Venus", 5: "Saturn", 6: "Sun"}  # Python weekday(): Mon=0..Sun=6
 
 
 def _parse_time(t):
@@ -65,9 +63,10 @@ def compute(args):
             "sub_lord": kp["sub_lord"],
         })
 
-    # Ruling planets
-    local = core.jd_to_local(jd, args.tz)
-    day_lord = WEEKDAY_LORD[local.weekday()]
+    # Ruling planets. The KP day lord follows the VEDIC day (sunrise-to-sunrise),
+    # not the civil midnight weekday — a birth before sunrise belongs to the
+    # previous weekday's lord.
+    day_lord = core.WEEKDAY_LORD[core.vedic_vara(jd, args.lat, args.lon, args.tz)]
     moon_kp = core.kp_lords(positions["Moon"]["longitude"])
     asc = core.ascendant(jd, args.lat, args.lon)
     asc_kp = core.kp_lords(asc["longitude"])
