@@ -157,3 +157,47 @@ def test_synthetic_equal_cusps_bhava_math():
     assert core.bhava_of(6.0, cusps) == 1
     assert core.bhava_of(36.0, cusps) == 2
     assert core.bhava_of(4.0, cusps) == 12
+
+
+# --------------------------------------------------------------------------- #
+# CLI features added in the robustness/systems waves (run as subprocess)
+# --------------------------------------------------------------------------- #
+import json  # noqa: E402
+import subprocess  # noqa: E402
+
+VEDIC = os.path.join(REPO, "vedic-astrology", "scripts")
+REF = ["--date", "1990-08-15", "--time", "14:30:00",
+       "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata"]
+
+
+def _run(script, extra=()):
+    cmd = [sys.executable, script, *REF, *extra, "--json"]
+    p = subprocess.run(cmd, cwd=VEDIC, capture_output=True, text=True)
+    assert p.returncode == 0, f"{script} failed:\n{p.stderr}"
+    return json.loads(p.stdout)
+
+
+def test_chalit_reports_house_shifts():
+    r = _run("chalit.py")
+    assert len(r["planets"]) == 9
+    for p in r["planets"]:
+        assert 1 <= p["whole_sign_house"] <= 12
+        assert 1 <= p["chalit_house"] <= 12
+        assert p["shifted"] == (p["whole_sign_house"] != p["chalit_house"])
+    # the reference chart has planets near sign edges -> at least one shift
+    assert r["shift_count"] >= 1
+    # Ketu must stay exactly opposite Rahu in the chalit chart too (6 houses apart)
+    h = {p["planet"]: p["chalit_house"] for p in r["planets"]}
+    assert (h["Ketu"] - h["Rahu"]) % 12 == 6
+
+
+def test_shadbala_is_complete_and_six_fold():
+    r = _run("strength.py")
+    sb = r["shadbala"]
+    assert sb.get("complete") is True
+    one = next(iter(sb["planets"].values()))
+    comps = one["components_virupa"]
+    flat = " ".join(comps.keys()).lower()
+    assert "sthana" in comps  # nested sub-components
+    for src in ("dig", "kala", "cheshta", "naisargika", "drik"):
+        assert src in flat, f"Shadbala missing {src}"
