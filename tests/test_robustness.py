@@ -191,6 +191,17 @@ def test_chalit_reports_house_shifts():
     assert (h["Ketu"] - h["Rahu"]) % 12 == 6
 
 
+def test_varshaphal_solar_return_hits_natal_sun():
+    r = _run("varshaphal.py", ("--age", "36"))
+    natal = r["natal"]["sun_longitude"]
+    ret = r["solar_return"]["sun_longitude_check"]
+    d = abs((natal - ret + 180) % 360 - 180)
+    assert d < 0.001, f"solar return Sun {ret} != natal Sun {natal}"
+    # Muntha at an age that is a multiple of 12 returns to the natal Lagna sign.
+    assert r["muntha"]["sign_num"] == r["natal"]["ascendant_sign_num"]
+    assert len(r["varshesha_candidates"]) == 5
+
+
 def test_shadbala_is_complete_and_six_fold():
     r = _run("strength.py")
     sb = r["shadbala"]
@@ -201,3 +212,45 @@ def test_shadbala_is_complete_and_six_fold():
     assert "sthana" in comps  # nested sub-components
     for src in ("dig", "kala", "cheshta", "naisargika", "drik"):
         assert src in flat, f"Shadbala missing {src}"
+
+
+def test_kp_sublord_pure_function_invariants():
+    # sub-lord widths within each nakshatra must sum to the full nakshatra span,
+    # so scanning a nakshatra yields sub-lords only from the 9 dasha lords.
+    seen = set()
+    lon = 0.0
+    while lon < 360.0:
+        kp = core.kp_lords(lon)
+        assert kp["sub_lord"] in core.DASHA_SEQUENCE
+        assert kp["star_lord"] in core.DASHA_SEQUENCE
+        assert 1 <= kp["sign_num"] <= 12
+        seen.add(kp["sub_lord"])
+        lon += 0.37
+    assert seen == set(core.DASHA_SEQUENCE)  # every planet appears as a sub-lord
+
+
+def test_kp_cli_structure_and_day_lord():
+    r = _run("kp.py", ("--ayanamsa", "lahiri"))
+    assert len(r["cuspal_sub_lords"]) == 12
+    assert len(r["planets"]) == 9
+    # 1990-08-15 was a Wednesday -> day lord Mercury
+    assert r["ruling_planets"]["day_lord"] == "Mercury"
+
+
+def test_transit_timeline_events_well_formed():
+    r = _run("transit_timeline.py", ("--start", "2025-01-01", "--end", "2028-01-01"))
+    evs = r["ingress_events"]
+    assert len(evs) >= 4  # several slow-planet ingresses over 3 years
+    dates = [e["date_local"] for e in evs]
+    assert dates == sorted(dates)  # chronological
+    for e in evs:
+        assert 1 <= e["house_from_moon"] <= 12
+        assert e["planet"] in ("Jupiter", "Saturn", "Rahu", "Ketu")
+
+
+def test_av_transit_scores_in_range():
+    r = _run("av_transit.py", ("--on", "2026-06-15"))
+    assert r["natal_sav_total"] == 337
+    for t in r["transits"]:
+        assert 0 <= t["sav_bindu"] <= 56  # SAV per-sign bounds
+        assert t["rating"] in ("supportive (high SAV)", "strained (low SAV)", "mixed")

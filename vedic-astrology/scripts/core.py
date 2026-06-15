@@ -535,6 +535,47 @@ def bhava_of(longitude: float, cusps: list) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# Krishnamurti Paddhati (KP) sub-lords
+# --------------------------------------------------------------------------- #
+SIGN_RULERS = {1: "Mars", 2: "Venus", 3: "Mercury", 4: "Moon", 5: "Sun", 6: "Mercury",
+               7: "Venus", 8: "Mars", 9: "Jupiter", 10: "Saturn", 11: "Saturn", 12: "Jupiter"}
+
+
+def kp_lords(lon: float) -> dict:
+    """KP Rashi/Nakshatra/Sub lord chain for a sidereal longitude.
+
+    Each 13°20' nakshatra is divided into nine sub-parts whose widths follow the
+    Vimshottari proportions (Ketu 7 ... Mercury 17, of 120), and the sub sequence
+    *starts from the nakshatra's own lord* in Vimshottari order. The sub-lord is
+    the planet whose sub-segment contains the longitude — the heart of KP.
+    """
+    lon = lon % 360.0
+    sign_num = int(lon // 30) + 1
+    nak_index = int(lon // NAKSHATRA_SPAN)          # 0..26
+    star_lord = DASHA_SEQUENCE[nak_index % 9]
+    pos_in_nak = lon - nak_index * NAKSHATRA_SPAN   # 0..13.3333
+    # Order of sub-lords starts at the star lord, then Vimshottari order, wrapping.
+    start = DASHA_SEQUENCE.index(star_lord)
+    order = [DASHA_SEQUENCE[(start + k) % 9] for k in range(9)]
+    acc = 0.0
+    sub_lord = order[-1]
+    for lord in order:
+        width = (DASHA_YEARS[lord] / 120.0) * NAKSHATRA_SPAN
+        if pos_in_nak < acc + width:
+            sub_lord = lord
+            break
+        acc += width
+    return {
+        "sign_num": sign_num,
+        "sign": SIGNS[sign_num - 1],
+        "rashi_lord": SIGN_RULERS[sign_num],
+        "nakshatra": NAKSHATRAS[nak_index],
+        "star_lord": star_lord,
+        "sub_lord": sub_lord,
+    }
+
+
+# --------------------------------------------------------------------------- #
 # Aspects, combustion, dignity, friendship
 # --------------------------------------------------------------------------- #
 def aspected_houses(from_house: int, planet: str) -> List[int]:
