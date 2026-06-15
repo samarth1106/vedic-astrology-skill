@@ -95,6 +95,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Yogas / chart combinations / raj yoga | `yogas.py` |
 | Planetary strength / Ashtakavarga / Shadbala / bindus | `strength.py` |
 | Divisional charts / vargas / D9 navamsa / D10 dasamsha / career-children-wealth chart (+ optional non-classical D5/D6/D8/D11) | `varga.py` |
+| **A shareable PDF/HTML ATLAS of the divisional charts / "all my vargas as a PDF" / a varga chart with an explanation of what each one means and how it's read** | **`varga_report.py`** |
 | Transits / gochar / Sade Sati / dhaiya / "what's Saturn doing now" / current sky | `gochar.py` |
 | House-by-house / bhava report / "read my 7th/10th house" / house lords | `houses.py` |
 | Remedies / upaya / gemstone / which planet to strengthen | `remedies.py` |
@@ -183,6 +184,12 @@ python3 strength.py --date 1990-08-15 --time 14:30:00 \
 # --charts all = 16 classical; all+ = also D5/D6/D8/D11 (non-classical, labelled)
 python3 varga.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts D9,D10
+
+# Shareable varga ATLAS (PDF/HTML): every divisional chart as a South-Indian grid,
+# each with a plain + technical reading and a transparent how-we-deduce-it verdict.
+# --charts all+ = all 20; --no-readings = grids only; falls back to HTML w/o fpdf2.
+python3 varga_report.py --name "Asha" --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --charts all+ --out ./Asha_vargas.pdf
 
 # Transits + Sade Sati (gochar from natal Moon; --on defaults to today)
 python3 gochar.py --date 1990-08-15 --time 14:30:00 \
