@@ -233,8 +233,20 @@ def test_kp_cli_structure_and_day_lord():
     r = _run("kp.py", ("--ayanamsa", "lahiri"))
     assert len(r["cuspal_sub_lords"]) == 12
     assert len(r["planets"]) == 9
-    # 1990-08-15 was a Wednesday -> day lord Mercury
+    # 1990-08-15 14:30 (after sunrise) was a Wednesday -> day lord Mercury
     assert r["ruling_planets"]["day_lord"] == "Mercury"
+
+
+def test_kp_day_lord_uses_sunrise_to_sunrise_vedic_day():
+    # A birth BEFORE sunrise belongs to the previous Vedic weekday. 1990-08-15 is
+    # a Wednesday (civil), so 02:00 is still Tuesday by the sunrise day -> Mars,
+    # NOT Mercury. Guards against regressing to civil-weekday day-lord.
+    cmd = [sys.executable, "kp.py", "--date", "1990-08-15", "--time", "02:00:00",
+           "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata",
+           "--ayanamsa", "lahiri", "--json"]
+    p = subprocess.run(cmd, cwd=VEDIC, capture_output=True, text=True)
+    assert p.returncode == 0, p.stderr
+    assert json.loads(p.stdout)["ruling_planets"]["day_lord"] == "Mars"
 
 
 def test_transit_timeline_events_well_formed():
