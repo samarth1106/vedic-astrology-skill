@@ -254,3 +254,13 @@ def test_av_transit_scores_in_range():
     for t in r["transits"]:
         assert 0 <= t["sav_bindu"] <= 56  # SAV per-sign bounds
         assert t["rating"] in ("supportive (high SAV)", "strained (low SAV)", "mixed")
+
+
+def test_verify_isolates_moon_parallax():
+    r = _run("verify.py")
+    pos = {p["planet"]: p for p in r["positions"]}
+    assert len(r["positions"]) == 9  # no duplicate Ketu
+    # Only the Moon should differ materially between topocentric and geocentric.
+    assert pos["Moon"]["delta_arcmin"] > 10
+    for name in ("Sun", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+        assert pos[name]["delta_arcmin"] < 1.0

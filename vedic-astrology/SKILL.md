@@ -97,6 +97,11 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | Divisional charts / vargas / D9 navamsa / D10 dasamsha / career-children-wealth chart (+ optional non-classical D5/D6/D8/D11) | `varga.py` |
 | **A shareable PDF/HTML ATLAS of the divisional charts / "all my vargas as a PDF" / a varga chart with an explanation of what each one means and how it's read** | **`varga_report.py`** |
 | Transits / gochar / Sade Sati / dhaiya / "what's Saturn doing now" / current sky | `gochar.py` |
+| **Transit TIMELINE over a date range / "when does Saturn/Jupiter change sign" / upcoming ingresses / when does Sade Sati start or end / what's coming this year** | **`transit_timeline.py`** |
+| **Ashtakavarga transit strength / "is this a good transit for me" / bindu score of where Saturn/Jupiter is transiting** | **`av_transit.py`** |
+| **Annual chart / Varshaphal / Tajika / solar return / "what about this year / my year ahead" / Muntha / year lord** | **`varshaphal.py`** |
+| **KP / Krishnamurti Paddhati / sub-lord / cuspal sub-lord / ruling planets / KP significators** | **`kp.py`** |
+| **Bhava Chalit / cusp-based houses / "is my planet really in the 10th" / does the house change with real cusps / birth-time-sensitive house check** | **`chalit.py`** |
 | House-by-house / bhava report / "read my 7th/10th house" / house lords | `houses.py` |
 | Remedies / upaya / gemstone / which planet to strengthen | `remedies.py` |
 | Which mantra for wealth / success / marriage / health / a goal | `mantra.py` |
@@ -106,6 +111,7 @@ Run them with the working directory set to `scripts/` (they import `core`).
 | **What NOT to do / what to avoid / refrain from today or this week / don'ts / inauspicious time / bad day / Panchak / Bhadra / Disha Shool / which direction not to travel / Chandrashtama / Rahu Kaal to avoid** | **`avoid.py`** |
 | Marriage matching / Guna Milan / kundli milan / 36 gunas / Manglik / Kaal Sarpa | `matching.py` |
 | Birth-time rectification / "is my birth time right" / find/verify birth time from life events | `rectify.py` |
+| **Cross-check / reproduce a chart from other software / "why doesn't my Moon match" / topocentric vs geocentric** | **`verify.py`** |
 | Look up a city's coordinates + timezone | `geocode.py` |
 
 **Answering ANY seeker question:** `references/answer-book.md` maps every common
@@ -195,6 +201,26 @@ python3 varga_report.py --name "Asha" --date 1990-08-15 --time 14:30:00 \
 python3 gochar.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
 
+# Transit TIMELINE: slow-planet sign-ingress dates over a range (house from Moon, Sade Sati flags)
+python3 transit_timeline.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --start 2026-01-01 --end 2028-01-01
+
+# Ashtakavarga transit strength on a date (SAV/BAV bindus where the slow planets transit)
+python3 av_transit.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --on 2026-06-04
+
+# Varshaphal — Tajika annual chart for a given age (solar return + Muntha + year-lord candidates)
+python3 varshaphal.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --age 36
+
+# KP — sub-lords, cuspal sub-lords, ruling planets (defaults to the KP ayanamsa)
+python3 kp.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+
+# Bhava Chalit — cusp-based houses; flags planets that change house vs whole-sign
+python3 chalit.py --date 1990-08-15 --time 14:30:00 \
+  --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata
+
 # Bhava (house-by-house) report; --house N for one house
 python3 houses.py --date 1990-08-15 --time 14:30:00 \
   --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata --house 10
@@ -262,7 +288,10 @@ Always prefer a birth record where one exists.
    blend model), load `references/dasha-effects.md`. For divisional charts (which
    varga reads which life area, and the honest caveat on the strength numbers),
    load `references/vargas.md`. For transits and Sade Sati, load
-   `references/gochar.md`. Load these on demand — do not preload them.
+   `references/gochar.md`. For the predictive/advanced tools — Bhava Chalit
+   (`chalit.py`), the transit timeline (`transit_timeline.py`), Ashtakavarga
+   transits (`av_transit.py`), Varshaphal (`varshaphal.py`), and KP (`kp.py`) —
+   load `references/predictive.md`. Load these on demand — do not preload them.
 4. **`dasha_predict.py` is the go-to when the user asks "what does my current
    dasha mean / how will this period affect me".** It already personalises the
    reading to the chart (house placement, lordship, dignity, combustion, and the
