@@ -10,6 +10,12 @@ Yamaganda / Gulika and recommends the Abhijit muhurta window. Give birth details
 and it also weighs **Tara Bala** (from your janma nakshatra) and **Chandra Bala**
 (the Moon's transit from your natal Moon).
 
+**Chandrashtama** (transit Moon in the 8th sign from the janma rashi) is treated as
+disqualifying, not merely weak: such days are held out of the ranking entirely and
+reported separately under `excluded_chandrashtama`, so the exclusion stays visible.
+This check needs birth data — without it the ranking cannot detect Chandrashtama and
+says so.
+
 Usage:
     python muhurta.py --event marriage --from 2026-11-01 --to 2026-12-15 \\
         --lat 28.6139 --lon 77.2090 --tz Asia/Kolkata [--top 7] \\
@@ -160,6 +166,7 @@ def score_day(pan: dict, ev: dict, natal):
         s -= 18; why.append("-Vishti (Bhadra) karana — avoid starting work")
 
     tara = chandra = None
+    chandrashtama = False
     if natal:
         njak, nsign = natal
         cnt = ((N.index(nak) - njak) % 27) + 1
@@ -174,15 +181,24 @@ def score_day(pan: dict, ev: dict, natal):
         day_moon_sign = int(pan["moon_longitude"] // 30) + 1
         cpos = ((day_moon_sign - nsign) % 12) + 1
         chandra = cpos
-        if cpos in (4, 8, 12):
+        if cpos == 8:
+            # Chandrashtama — transit Moon in the 8th from the janma rashi.
+            # Classically disqualifying for starting anything, not merely weak,
+            # so it is excluded from the ranking rather than scored down.
+            chandrashtama = True
+            s -= 40
+            why.append("-CHANDRASHTAMA: Moon 8th from your Moon — do not begin here")
+        elif cpos in (4, 12):
             s -= 15; why.append(f"-Chandra Bala: Moon {cpos}th from your Moon (weak)")
         elif cpos in (1, 3, 6, 7, 10, 11):
             s += 8; why.append(f"+Chandra Bala: Moon {cpos}th from your Moon (strong)")
 
     s = max(0.0, min(100.0, s))
-    verdict = ("Excellent" if s >= 78 else "Good" if s >= 62 else
+    verdict = ("Excluded" if chandrashtama else
+               "Excellent" if s >= 78 else "Good" if s >= 62 else
                "Fair" if s >= 45 else "Avoid")
-    return s, verdict, why, {"tara": tara, "chandra_pos": chandra}
+    return s, verdict, why, {"tara": tara, "chandra_pos": chandra,
+                             "chandrashtama": chandrashtama}
 
 
 def compute(args) -> dict:
@@ -212,10 +228,16 @@ def compute(args) -> dict:
         })
         cur += timedelta(days=1)
 
-    ranked = sorted(days, key=lambda x: x["score"], reverse=True)
+    # Chandrashtama days are held out of the ranking entirely (only detectable
+    # when birth data was supplied). They are reported separately rather than
+    # dropped silently, so the exclusion is visible and auditable.
+    eligible = [d for d in days if not d.get("chandrashtama")]
+    excluded = [d for d in days if d.get("chandrashtama")]
+    ranked = sorted(eligible, key=lambda x: x["score"], reverse=True)
+    excluded.sort(key=lambda x: x["date"])
     return {"event": args.event, "from": args.date_from, "to": args.date_to,
             "personalised": natal is not None, "note": ev.get("note"),
-            "ranked": ranked}
+            "ranked": ranked, "excluded_chandrashtama": excluded}
 
 
 def render_text(r: dict, top: int) -> str:
@@ -243,6 +265,22 @@ def render_text(r: dict, top: int) -> str:
         if top_reasons:
             A(f"     why: {'; '.join(top_reasons)}")
     A("\n" + "=" * 70)
+    exc = r.get("excluded_chandrashtama") or []
+    if exc:
+        A(f"  EXCLUDED — {len(exc)} Chandrashtama day(s) (transit Moon 8th from")
+        A("  your natal Moon) were held out of the ranking above:")
+        for d in exc:
+            A(f"    \u26d4 {d['date']} ({d['weekday'][:3]})  "
+              f"nakshatra {d['nakshatra']} | score {d['score']} "
+              f"(after the -40 Chandrashtama penalty)")
+        A("-" * 70)
+    elif r["personalised"]:
+        A("  No Chandrashtama days fell in this window.")
+        A("-" * 70)
+    else:
+        A("  NOT personalised: pass --birth-date/--birth-time/--birth-lat/--birth-lon")
+        A("  to enable Tara Bala, Chandra Bala and the Chandrashtama exclusion.")
+        A("-" * 70)
     A("  Scores blend vara, tithi, nakshatra, yoga and karana"
       + (" with your Tara & Chandra Bala." if r["personalised"] else "."))
     A("  A muhurta improves the start's 'weather' — it is not a guarantee.")

@@ -488,6 +488,58 @@ def test_muhurta_yoga_names_match_panchang():
     assert not unknown, f"muhurta scores unknown yoga name(s): {sorted(unknown)}"
 
 
+def test_muhurta_excludes_chandrashtama():
+    """Chandrashtama days must never be rankable.
+
+    Regression for a silent-wrong-answer bug: the scorer treated the transit
+    Moon in the 8th from the janma rashi as ordinary weak Chandra Bala (-15),
+    so a Chandrashtama day could still surface as an 'Excellent' recommendation.
+    Such days are now held out of `ranked` and reported under
+    `excluded_chandrashtama` instead — visibly, not silently dropped.
+
+    Reference chart has Moon in Taurus, so Chandrashtama falls when the transit
+    Moon is in Sagittarius — 2026-11-13/14 in this window.
+    """
+    span = 30                                    # 2026-11-01 .. 2026-11-30
+    r = run(VEDIC, "muhurta.py",
+            ["--event", "business", "--from", "2026-11-01", "--to", "2026-11-30",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata",
+             "--birth-date", "1990-08-15", "--birth-time", "14:30:00",
+             "--birth-lat", "28.6139", "--birth-lon", "77.2090",
+             "--birth-tz", "Asia/Kolkata"])
+
+    excluded = r["excluded_chandrashtama"]
+    exc_dates = {d["date"] for d in excluded}
+    assert exc_dates == {"2026-11-13", "2026-11-14"}
+
+    # No day is lost: the partition covers the whole window.
+    assert len(r["ranked"]) + len(excluded) == span
+
+    # Nothing with the Moon 8th from the natal Moon survives in the ranking.
+    assert all(d.get("chandra_pos") != 8 for d in r["ranked"])
+    for d in excluded:
+        assert d["chandra_pos"] == 8
+        assert d["verdict"] == "Excluded"
+
+    # And the excluded days are genuinely absent from the ranked list.
+    assert not (exc_dates & {d["date"] for d in r["ranked"]})
+
+
+def test_muhurta_chandrashtama_needs_birth_data():
+    """Without birth data the check cannot run — it must not silently 'pass'.
+
+    An empty exclusion list here means 'undetectable', not 'none present':
+    the same window personalised does exclude two days.
+    """
+    r = run(VEDIC, "muhurta.py",
+            ["--event", "business", "--from", "2026-11-01", "--to", "2026-11-30",
+             "--lat", "28.6139", "--lon", "77.2090", "--tz", "Asia/Kolkata"])
+    assert r["personalised"] is False
+    assert r["excluded_chandrashtama"] == []
+    assert len(r["ranked"]) == 30                # nothing excluded, nothing lost
+    assert all(d["chandra_pos"] is None for d in r["ranked"])
+
+
 def test_muhurta_rejects_backwards_range():
     proc = subprocess.run(
         [sys.executable, "muhurta.py", "--event", "vehicle",
