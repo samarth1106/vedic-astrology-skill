@@ -488,6 +488,28 @@ def test_muhurta_yoga_names_match_panchang():
     assert not unknown, f"muhurta scores unknown yoga name(s): {sorted(unknown)}"
 
 
+def test_verify_expect_moon_accepts_sign_and_degrees():
+    """--expect-moon takes decimal degrees OR a sign with degrees inside it.
+
+    Previously only decimal degrees parsed; a sign name died on a raw
+    float() ValueError, which is the most likely thing a user types.
+    """
+    sys.path.insert(0, VEDIC)
+    try:
+        import verify
+        assert verify.parse_longitude("198.2081") == pytest.approx(198.2081)
+        # Libra starts at 180 deg; 18d12m into it = 198.2 deg.
+        assert verify.parse_longitude("Libra 18 12") == pytest.approx(198.2)
+        assert verify.parse_longitude("lib 18 12") == pytest.approx(198.2)
+        assert verify.parse_longitude("Libra 18\u00b012'") == pytest.approx(198.2)
+        # Instructive errors, not opaque float() failures.
+        for bad in ("Libra", "banana", "Libra 44", "Libra x"):
+            with pytest.raises(ValueError):
+                verify.parse_longitude(bad)
+    finally:
+        sys.path.remove(VEDIC)
+
+
 def test_muhurta_excludes_chandrashtama():
     """Chandrashtama days must never be rankable.
 

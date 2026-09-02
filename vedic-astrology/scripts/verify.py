@@ -14,6 +14,7 @@ For cultural/educational use only.
 """
 import argparse
 import json
+import re
 
 import core
 
@@ -40,6 +41,54 @@ def _ang(a, b):
     return min(d, 360.0 - d)
 
 
+def parse_longitude(text: str) -> float:
+    """Parse an external Moon longitude given in any of the usual forms.
+
+    Accepts decimal degrees ("198.2081"), or a sign name with degrees inside
+    that sign ("Libra 18 12", "Libra 18d12m", "Libra 18\u00b012'30\"").
+    Sign names are matched case-insensitively on a unique prefix, so "lib" and
+    "Libra" both work. Raises ValueError with an instructive message rather
+    than letting float() fail opaquely.
+    """
+    t = " ".join(str(text).split())
+    try:
+        return float(t) % 360.0                      # plain decimal degrees
+    except ValueError:
+        pass
+
+    parts = re.split(r"[\s\u00b0'\"dms]+", t.strip())
+    parts = [x for x in parts if x]
+    if not parts:
+        raise ValueError("--expect-moon is empty")
+
+    word = parts[0].lower()
+    matches = [i for i, nm in enumerate(core.SIGNS) if nm.lower().startswith(word)]
+    if len(matches) != 1:
+        raise ValueError(
+            f"could not read --expect-moon {text!r}. Give decimal degrees "
+            f"(e.g. 198.2081) or a sign with degrees inside it "
+            f"(e.g. \"Libra 18 12\"). Signs: {', '.join(core.SIGNS)}")
+
+    nums = []
+    for x in parts[1:]:
+        try:
+            nums.append(float(x))
+        except ValueError:
+            raise ValueError(
+                f"could not read {x!r} in --expect-moon {text!r} as a number. "
+                f"Expected \"<Sign> <deg> [min] [sec]\".")
+    if not nums:
+        raise ValueError(
+            f"--expect-moon {text!r} names the sign but gives no degrees. "
+            f"A sign alone is 30\u00b0 wide \u2014 too coarse to compare. "
+            f"Use e.g. \"{core.SIGNS[matches[0]]} 18 12\".")
+    nums += [0.0, 0.0]
+    deg, minute, sec = nums[0], nums[1], nums[2]
+    if not 0 <= deg < 30:
+        raise ValueError(f"degrees within a sign must be 0\u201330, got {deg}")
+    return (matches[0] * 30.0 + deg + minute / 60.0 + sec / 3600.0) % 360.0
+
+
 def compute(args):
     topo = _positions(args, True)
     geo = _positions(args, False)
@@ -59,7 +108,7 @@ def compute(args):
                 "source may mean DDdeg MM' (e.g. 14.57 = 14deg57'), not decimal degrees.",
     }
     if args.expect_moon is not None:
-        em = float(args.expect_moon) % 360.0
+        em = parse_longitude(args.expect_moon)
         dt = _ang(em, topo["Moon"]) * 60.0
         dg = _ang(em, geo["Moon"]) * 60.0
         out["moon_match"] = {
@@ -103,7 +152,7 @@ def main():
     ap.add_argument("--lon", type=float, required=True)
     ap.add_argument("--tz", required=True)
     ap.add_argument("--expect-moon", default=None, dest="expect_moon",
-                    help="external Moon sidereal longitude (deg) to detect the source convention")
+                    help="external Moon sidereal longitude to cross-check: decimal degrees (198.2081) or sign+degrees (\"Libra 18 12\")")
     ap.add_argument("--ayanamsa", default=core.DEFAULT_AYANAMSA)
     ap.add_argument("--node", default="mean", choices=["mean", "true"])
     ap.add_argument("--ephemeris", default="moshier", choices=["moshier", "swiss"])
