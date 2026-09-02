@@ -67,7 +67,16 @@ Configurable **ayanamsa** (Lahiri / Raman / KP / Yukteshwar / Fagan-Bradley),
 
 ## 📦 Installation
 
-### 1. Install as a Claude Code skill
+### 1. Install as a Claude Code plugin (recommended)
+
+Both skills, in one command:
+
+```
+/plugin marketplace add samarth1106/vedic-astrology-skill
+/plugin install vedic-astrology@samarth1106-vedic
+```
+
+### 1b. Or copy it in as a plain skill
 
 Copy the `vedic-astrology/` folder into your Claude Code skills directory:
 

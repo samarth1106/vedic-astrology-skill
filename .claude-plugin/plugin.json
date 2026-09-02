@@ -1,0 +1,26 @@
+{
+  "name": "vedic-astrology",
+  "description": "Offline Vedic astrology (jyotish) and numerology: kundli, Vimshottari dasha, panchang, muhurta, yogas, Ashtakavarga/Shadbala, Guna Milan, divisional charts. Swiss Ephemeris maths, no API keys, no network.",
+  "version": "2.5.0",
+  "author": {
+    "name": "samarth1106",
+    "url": "https://github.com/samarth1106"
+  },
+  "homepage": "https://github.com/samarth1106/vedic-astrology-skill",
+  "repository": "https://github.com/samarth1106/vedic-astrology-skill",
+  "license": "AGPL-3.0",
+  "keywords": [
+    "vedic-astrology",
+    "jyotish",
+    "kundli",
+    "panchang",
+    "dasha",
+    "numerology",
+    "swiss-ephemeris",
+    "horoscope"
+  ],
+  "skills": [
+    "./vedic-astrology",
+    "./numerology"
+  ]
+}

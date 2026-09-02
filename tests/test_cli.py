@@ -457,6 +457,51 @@ def test_yantra_writes_svg(tmp_path):
     assert out.exists() and out.read_text().startswith("<svg")
 
 
+# --------------------------------------------------------------------------- #
+# Plugin manifests — keep the packaging honest. CI has no `claude` CLI, so these
+# assert at the JSON level what `claude plugin validate` checks structurally.
+# --------------------------------------------------------------------------- #
+def test_plugin_manifest_points_at_real_skills():
+    """Every skill path in plugin.json must exist and carry a SKILL.md."""
+    manifest = json.loads(
+        open(os.path.join(REPO, ".claude-plugin", "plugin.json")).read())
+    assert manifest["name"]
+    assert manifest["skills"], "plugin.json declares no skills"
+    for rel in manifest["skills"]:
+        skill_dir = os.path.normpath(os.path.join(REPO, rel))
+        assert os.path.isdir(skill_dir), f"skills path missing: {rel}"
+        assert os.path.isfile(os.path.join(skill_dir, "SKILL.md")), \
+            f"no SKILL.md in {rel}"
+
+
+def test_marketplace_manifest_agrees_with_plugin():
+    """marketplace.json and plugin.json must not drift apart."""
+    base = os.path.join(REPO, ".claude-plugin")
+    plugin = json.loads(open(os.path.join(base, "plugin.json")).read())
+    market = json.loads(open(os.path.join(base, "marketplace.json")).read())
+    assert market["name"] and market["owner"]["name"]
+    entries = [p for p in market["plugins"] if p["name"] == plugin["name"]]
+    assert entries, f"{plugin['name']} not listed in marketplace.json"
+    entry = entries[0]
+    assert entry["version"] == plugin["version"], "version drift between manifests"
+    assert entry["license"] == plugin["license"]
+
+
+def test_plugin_manifests_are_tracked_by_git():
+    """The blanket *.json ignore must not silently drop the manifests.
+
+    Regression: .gitignore ignores *.json, so `git add .claude-plugin` was a
+    no-op and the manifests existed only on disk — validating locally while
+    being absent from the repo.
+    """
+    import subprocess as sp
+    for name in ("plugin.json", "marketplace.json"):
+        rel = f".claude-plugin/{name}"
+        out = sp.run(["git", "ls-files", "--error-unmatch", rel],
+                     cwd=REPO, capture_output=True, text=True)
+        assert out.returncode == 0, f"{rel} is not tracked by git"
+
+
 def test_muhurta_ranking():
     r = run(VEDIC, "muhurta.py",
             ["--event", "marriage", "--from", "2026-11-01", "--to", "2026-11-20",

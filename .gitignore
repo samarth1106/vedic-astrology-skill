@@ -30,6 +30,7 @@ Thumbs.db
 scratch/
 *.json
 !examples/*.json
+!.claude-plugin/*.json
 
 # Seeker (personal birth) data — must NEVER be committed. Keep real readings,
 # charts, and birth details in these gitignored paths or in private memory
