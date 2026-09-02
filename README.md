@@ -210,6 +210,15 @@ CI runs the suite on Python 3.10–3.12 on every push and PR.
 - **`core.py` owns the engine.** Sidereal mode, ayanamsa, planet IDs, nakshatra
   and dasha constants, and local→UT time conversion all live in one file. It uses
   the built-in **Moshier ephemeris**, so no large `.se1` data files are needed.
+  Moshier is analytical and offline, accurate to roughly an arcsecond over the
+  historical range this toolkit covers — ample for charts, dashas and panchang.
+- **`--ephemeris swiss` needs the data files, and now says so.** Swiss Ephemeris
+  silently falls back to Moshier when the `.se1` files are missing, which meant
+  the flag used to report success while returning Moshier numbers. It is now
+  verified at init: point `SE_EPHE_PATH` at a directory of `.se1` files from
+  [astro.com](https://www.astro.com/ftp/swisseph/ephe/) and it will be used;
+  leave them uninstalled and the run fails loudly rather than mislabelling its
+  source.
 - Longitudes are **sidereal**. Tithi uses the Moon−Sun difference (ayanamsa-independent);
   nakshatra and yoga use sidereal longitudes (ayanamsa-dependent).
 - **Ketu** = Rahu + 180°; **Rahu** uses the mean lunar node.

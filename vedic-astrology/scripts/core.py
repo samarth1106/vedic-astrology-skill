@@ -31,6 +31,7 @@ See the repository LICENSE and NOTICE files.
 
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
@@ -67,6 +68,7 @@ _STATE: dict = {
     "node": "mean",          # "mean" -> MEAN_NODE, "true" -> TRUE_NODE
     "ayanamsa": DEFAULT_AYANAMSA,
     "topocentric": False,
+    "ephemeris": "moshier",  # what is ACTUALLY in force, verified at init
 }
 
 # --------------------------------------------------------------------------- #
@@ -199,6 +201,7 @@ def init_engine(
     lon: Optional[float] = None,
     altitude: float = 0.0,
     ephemeris: str = "moshier",
+    ephe_path: Optional[str] = None,
 ) -> None:
     """Configure Swiss Ephemeris for sidereal (Vedic) calculation.
 
@@ -207,7 +210,11 @@ def init_engine(
     node: "mean" (default) or "true" lunar node for Rahu/Ketu.
     topocentric: if True, positions are computed for an observer at (lat, lon,
         altitude). Recommended for birth charts (Moon parallax). Requires lat/lon.
-    ephemeris: "moshier" (default, offline) or "swiss" (needs .se1 files).
+    ephemeris: "moshier" (default, offline) or "swiss". "swiss" needs the .se1
+        data files; give their directory via ephe_path or the SE_EPHE_PATH
+        environment variable. If they cannot be found this RAISES rather than
+        quietly returning Moshier numbers under a Swiss label.
+    ephe_path: directory holding the Swiss .se1 files (overrides SE_EPHE_PATH).
     """
     key = ayanamsa.strip().lower()
     if key not in AYANAMSA:
@@ -216,8 +223,32 @@ def init_engine(
         )
     swe.set_sid_mode(AYANAMSA[key], 0, 0)
 
+    if ephemeris not in ("moshier", "swiss"):
+        raise ValueError(f"Unknown ephemeris '{ephemeris}'. Use 'moshier' or 'swiss'.")
+
     flags = swe.FLG_SIDEREAL | swe.FLG_SPEED
     flags |= swe.FLG_SWIEPH if ephemeris == "swiss" else swe.FLG_MOSEPH
+
+    if ephemeris == "swiss":
+        # pyswisseph SILENTLY falls back to Moshier when the .se1 data files are
+        # not on the ephemeris path — same numbers, but the caller believes they
+        # asked for (and got) the higher-precision source. Point Swiss at the
+        # files if we were told where they are, then PROVE the request took
+        # effect by probing one body and reading the returned flag back.
+        path = ephe_path or os.environ.get("SE_EPHE_PATH")
+        if path:
+            swe.set_ephe_path(path)
+        _, retflag = swe.calc_ut(2451545.0, swe.SUN, flags)
+        if not retflag & swe.FLG_SWIEPH:
+            raise ValueError(
+                "ephemeris='swiss' requested but the Swiss .se1 data files were "
+                "not found, so Swiss Ephemeris silently fell back to Moshier. "
+                "Either set SE_EPHE_PATH (or pass ephe_path=) to a directory "
+                "holding the .se1 files from https://www.astro.com/ftp/swisseph/ephe/, "
+                "or use ephemeris='moshier' (the default), which is fully offline "
+                "and accurate to ~1 arcsec for these purposes."
+                + (f" Looked in: {path}" if path else " No path was configured.")
+            )
 
     if topocentric:
         if lat is None or lon is None:
@@ -227,7 +258,8 @@ def init_engine(
 
     PLANETS["Rahu"] = swe.TRUE_NODE if node == "true" else swe.MEAN_NODE
 
-    _STATE.update({"flags": flags, "node": node, "ayanamsa": key, "topocentric": topocentric})
+    _STATE.update({"flags": flags, "node": node, "ayanamsa": key,
+                   "topocentric": topocentric, "ephemeris": ephemeris})
 
 
 def ayanamsa_value(jd: float) -> float:

@@ -488,6 +488,66 @@ def test_muhurta_yoga_names_match_panchang():
     assert not unknown, f"muhurta scores unknown yoga name(s): {sorted(unknown)}"
 
 
+def test_swiss_ephemeris_never_silently_falls_back():
+    """ephemeris='swiss' must deliver Swiss or refuse — never quietly Moshier.
+
+    pyswisseph falls back to Moshier when the .se1 files are absent, returning
+    the same numbers under a Swiss label. Written to hold either way: if the
+    files are missing the guard must raise; if they are present Swiss must
+    genuinely be in force.
+    """
+    sys.path.insert(0, VEDIC)
+    try:
+        import core
+        import swisseph as swe
+        try:
+            core.init_engine(ephemeris="swiss")
+        except ValueError as exc:
+            assert "fell back" in str(exc)          # guard fired, as it should
+        else:
+            _, retflag = swe.calc_ut(2451545.0, swe.SUN, core._STATE["flags"])
+            assert retflag & swe.FLG_SWIEPH        # Swiss really engaged
+        core.init_engine(ephemeris="moshier")       # restore the default
+        assert core._STATE["ephemeris"] == "moshier"
+        with pytest.raises(ValueError):
+            core.init_engine(ephemeris="banana")
+    finally:
+        sys.path.remove(VEDIC)
+
+
+def _swiss_data_available() -> bool:
+    """True only if the Swiss .se1 files are genuinely usable here."""
+    sys.path.insert(0, VEDIC)
+    try:
+        import core
+        try:
+            core.init_engine(ephemeris="swiss")
+            return True
+        except ValueError:
+            return False
+        finally:
+            core.init_engine(ephemeris="moshier")
+    finally:
+        sys.path.remove(VEDIC)
+
+
+def test_swiss_ephemeris_cli_matches_data_availability():
+    """The CLI must never print a chart claiming a source it does not have.
+
+    Deterministic in both environments: with the .se1 files present the run
+    succeeds; without them it must fail loudly. Deliberately not a skip — a
+    skip here would pass silently in exactly the broken case.
+    """
+    proc = subprocess.run(
+        [sys.executable, "kundli.py", *REF, "--ephemeris", "swiss"],
+        cwd=VEDIC, capture_output=True, text=True)
+    if _swiss_data_available():
+        assert proc.returncode == 0
+    else:
+        assert proc.returncode != 0, "swiss ran without .se1 files — silent fallback"
+        assert "fell back" in proc.stdout + proc.stderr
+
+
 def test_verify_expect_moon_accepts_sign_and_degrees():
     """--expect-moon takes decimal degrees OR a sign with degrees inside it.
 
